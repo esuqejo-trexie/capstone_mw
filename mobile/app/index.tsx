@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Animated,
@@ -13,6 +14,12 @@ import {
   View,
 } from "react-native";
 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "../firebaseConfig";
+
 export default function Index() {
   const { width } = useWindowDimensions();
 
@@ -23,6 +30,8 @@ export default function Index() {
 
   const slideX = useRef(new Animated.Value(width)).current; // sliding animation
   const panX = useRef(new Animated.Value(0)).current; // gesture drag
+
+  const router = useRouter();
 
   // Sign Up states
   const [name, setName] = useState("");
@@ -93,12 +102,55 @@ export default function Index() {
     })
   ).current;
 
-  const handleSignUp = () => {
-    console.log({ name, email, password, confirmPassword });
+  const handleSignUp = async () => {
+    if (!name || !email || !password || !confirmPassword) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
+
+      console.log("Sign up success:", userCredential.user.email);
+
+      // TEMP: close form after success
+      closeForm();
+    } catch (error: any) {
+      console.log("Sign up error:", error.message);
+      alert(error.message);
+    }
   };
 
-  const handleSignIn = () => {
-    console.log({ signInEmail, signInPassword });
+  const handleSignIn = async () => {
+    if (!signInEmail || !signInPassword) {
+      alert("Please enter email and password.");
+      return;
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        signInEmail.trim(),
+        signInPassword
+      );
+
+      console.log("Sign in success:", userCredential.user.email);
+
+      // Redirect to parent-gate after successful sign in
+      router.replace("/parent_gate");
+    } catch (error: any) {
+      console.log("Sign in error:", error.message);
+      alert(error.message);
+    }
   };
 
   return (
