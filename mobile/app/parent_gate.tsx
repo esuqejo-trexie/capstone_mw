@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import * as ScreenOrientation from "expo-screen-orientation";
+import React, { useEffect, useState } from "react";
 import {
   ImageBackground,
   KeyboardAvoidingView,
@@ -15,8 +16,21 @@ export default function ParentGate() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
 
-  // TEMP: hardcoded testing code
   const TEST_PARENT_KID_CODE = "ABC123";
+
+  // Lock screen orientation to portrait
+  useEffect(() => {
+    const lockOrientation = async () => {
+      await ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.PORTRAIT
+      );
+    };
+    lockOrientation();
+
+    return () => {
+      ScreenOrientation.unlockAsync();
+    };
+  }, []);
 
   const handleAccess = () => {
     if (code.trim().toUpperCase() !== TEST_PARENT_KID_CODE) {
@@ -25,28 +39,29 @@ export default function ParentGate() {
     }
 
     setError("");
-    router.replace("/(kid)/home"); // redirect to kid home for testing
+    router.replace("/(kid)/home");
   };
 
   return (
     <View className="flex-1">
       <ImageBackground
-        source={require("../assets/general/bg_landscape.webp")}
+        source={require("../assets/general/bg_portrait.webp")}
         resizeMode="cover"
         className="flex-1"
       >
-        <View className="flex-1 bg-white/75">
+        {/* White overlay */}
+        <View className="flex-1 bg-white/80">
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : undefined}
             className="flex-1 justify-center px-6"
           >
-            <View className="bg-primary rounded-2xl p-6 mx-20">
-              <Text className="text-2xl font-sans-bold text-center text-white mb-2">
+            <View className="bg-white/90 rounded-3xl p-6 mx-6 shadow-md">
+              <Text className="text-2xl font-sans-bold text-center text-primary mb-2">
                 Parent Access Required
               </Text>
 
-              <Text className="text-center font-sans-medium text-gray-200 mb-6">
-                Enter the parent–kid access code to continue
+              <Text className="text-center font-sans-medium text-gray-600 mb-6">
+                Enter the parent–kid access code to continue.
               </Text>
 
               <TextInput
@@ -57,7 +72,6 @@ export default function ParentGate() {
                 }}
                 placeholder="Access Code"
                 autoCapitalize="characters"
-                secureTextEntry
                 className="border border-gray-300 rounded-xl px-4 py-3 mb-3 text-center tracking-widest bg-white"
               />
 
@@ -67,9 +81,9 @@ export default function ParentGate() {
 
               <TouchableOpacity
                 onPress={handleAccess}
-                className="bg-white rounded-3xl py-3"
+                className="bg-primary rounded-3xl py-3"
               >
-                <Text className="text-secondary text-center font-semibold text-lg">
+                <Text className="text-white text-center font-sans-semibold text-lg">
                   Enter Kid Mode
                 </Text>
               </TouchableOpacity>

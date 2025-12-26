@@ -1,8 +1,10 @@
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import * as ScreenOrientation from "expo-screen-orientation";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Image,
+  ImageBackground,
   KeyboardAvoidingView,
   PanResponder,
   Platform,
@@ -21,82 +23,86 @@ import {
 import { auth } from "../firebaseConfig";
 
 export default function Index() {
-  const { width } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
+  const router = useRouter();
 
-  // Control which form is open: 'signup' or 'signin'
+  // 🔒 Lock this screen to portrait
+  useEffect(() => {
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+
+    return () => {
+      ScreenOrientation.unlockAsync();
+    };
+  }, []);
+
   const [activeForm, setActiveForm] = useState<"none" | "signup" | "signin">(
     "none"
   );
 
-  const slideX = useRef(new Animated.Value(width)).current; // sliding animation
-  const panX = useRef(new Animated.Value(0)).current; // gesture drag
-
-  const router = useRouter();
+  // Bottom sheet animation
+  const slideY = useRef(new Animated.Value(height)).current;
+  const panY = useRef(new Animated.Value(0)).current;
 
   // Sign Up states
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [termsChecked, setTermsChecked] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Sign In states
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPassword, setSignInPassword] = useState("");
 
-  // Open form with slide-in animation
+  // Open bottom sheet
   const openForm = (form: "signup" | "signin") => {
     setActiveForm(form);
-    panX.setValue(0); // reset drag
-    Animated.timing(slideX, {
+    panY.setValue(0);
+
+    Animated.timing(slideY, {
       toValue: 0,
       duration: 350,
       useNativeDriver: true,
     }).start();
   };
 
-  // Switch between Sign Up / Sign In forms
+  // Switch forms
   const switchForm = (form: "signup" | "signin") => {
-    Animated.timing(slideX, {
-      toValue: width,
+    Animated.timing(slideY, {
+      toValue: height,
       duration: 200,
       useNativeDriver: true,
     }).start(() => openForm(form));
   };
 
-  // Handle closing form programmatically
+  // Close bottom sheet
   const closeForm = () => {
-    Animated.timing(slideX, {
-      toValue: width,
+    Animated.timing(slideY, {
+      toValue: height,
       duration: 300,
       useNativeDriver: true,
     }).start(() => setActiveForm("none"));
   };
 
-  // PanResponder for swipe-to-close
+  // Swipe-down gesture
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) =>
-        Math.abs(gestureState.dx) > 10,
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dx > 0) {
-          panX.setValue(gestureState.dx); // move form along with finger
+      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dy) > 10,
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) {
+          panY.setValue(gesture.dy);
         }
       },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > width / 2) {
-          // Swipe past half width → close form
-          Animated.timing(slideX, {
-            toValue: width,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            setActiveForm("none");
-            panX.setValue(0);
-          });
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > height * 0.25) {
+          closeForm();
+          panY.setValue(0);
         } else {
-          // Not enough → snap back
-          Animated.spring(panX, { toValue: 0, useNativeDriver: true }).start();
+          Animated.spring(panY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
         }
       },
     })
@@ -114,18 +120,9 @@ export default function Index() {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email.trim(),
-        password
-      );
-
-      console.log("Sign up success:", userCredential.user.email);
-
-      // TEMP: close form after success
+      await createUserWithEmailAndPassword(auth, email.trim(), password);
       closeForm();
     } catch (error: any) {
-      console.log("Sign up error:", error.message);
       alert(error.message);
     }
   };
@@ -137,18 +134,13 @@ export default function Index() {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
+      await signInWithEmailAndPassword(
         auth,
         signInEmail.trim(),
         signInPassword
       );
-
-      console.log("Sign in success:", userCredential.user.email);
-
-      // Redirect to parent-gate after successful sign in
       router.replace("/parent_gate");
     } catch (error: any) {
-      console.log("Sign in error:", error.message);
       alert(error.message);
     }
   };
@@ -157,261 +149,314 @@ export default function Index() {
     <View className="flex-1 bg-white overflow-hidden">
       {/* ===== Landing Screen ===== */}
       {activeForm === "none" && (
-        <View className="flex-1 flex-row bg-white">
-          {/* Left: Logo + Tagline */}
-          <View className="flex-[0.55] justify-center items-center px-10">
-            <Image
-              source={require("../assets/general/SmartRead_logo.webp")}
-              style={{
-                width: Math.min(width * 0.25, 220),
-                height: Math.min(width * 0.25, 220),
-              }}
-              resizeMode="contain"
-              className="mb-2"
-            />
-            <Text className="text-3xl text-gray-800 font-sans-bold text-center leading-tight">
-              Ignite your reading,
-            </Text>
-            <Text className="text-3xl text-gray-800 font-sans-bold text-center leading-tight">
-              Spark your imagination.
-            </Text>
-          </View>
+        <View className="flex-1 justify-center items-center px-8">
+          <Image
+            source={require("../assets/general/SmartRead_logo.webp")}
+            style={{ width: 250, height: 250 }}
+            resizeMode="contain"
+            className="mb-6"
+          />
 
-          {/* Right: Call to Action */}
-          <View className="flex-[0.45] justify-center items-center bg-primary px-10">
-            <Text className="text-white text-4xl font-sans-bold text-center mb-6">
-              Ready to begin?
-            </Text>
+          <Text className="text-3xl font-sans-bold text-center text-gray-800">
+            Ignite your reading,
+          </Text>
+          <Text className="text-3xl font-sans-bold text-center text-gray-800 mb-10">
+            Spark your imagination.
+          </Text>
 
-            <Text className="text-white text-base text-center mb-10 font-sans-medium max-w-sm">
-              Create an account and start your child’s reading journey with
-              SmartRead.
+          <TouchableOpacity
+            onPress={() => openForm("signup")}
+            className="bg-primary px-14 py-4 rounded-2xl shadow-lg mt-8"
+          >
+            <Text className="text-white font-sans-bold text-2xl">
+              Get Started
             </Text>
-
-            <TouchableOpacity
-              onPress={() => openForm("signup")}
-              className="bg-white px-14 py-4 rounded-2xl shadow-lg active:opacity-90"
-            >
-              <Text className="text-primary font-sans-bold text-lg">
-                Get Started
-              </Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         </View>
       )}
 
-      {/* ===== Sliding Form Container ===== */}
+      {/* ===== Bottom Sheet Form ===== */}
       {activeForm !== "none" && (
         <Animated.View
           {...panResponder.panHandlers}
           style={{
-            transform: [{ translateX: Animated.add(slideX, panX) }],
+            transform: [{ translateY: Animated.add(slideY, panY) }],
           }}
-          className="absolute inset-0 bg-primary/95"
+          className="absolute inset-0"
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
+          <ImageBackground
+            source={require("../assets/general/bg_portrait.webp")}
+            resizeMode="cover"
             className="flex-1"
           >
-            <ScrollView
-              contentContainerStyle={{
-                flexGrow: 1,
-                justifyContent: "center",
-                paddingHorizontal: 24,
-              }}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              <View className="py-10">
-                {/* ===== Sign Up Form ===== */}
-                {activeForm === "signup" && (
-                  <>
-                    <Text className="text-3xl font-sans-bold text-white mb-8">
-                      Sign Up
-                    </Text>
+            <View className="flex-1 bg-white/80">
+              <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                className="flex-1"
+              >
+                <ScrollView
+                  contentContainerStyle={{
+                    flexGrow: 1,
+                    justifyContent: "center",
+                    paddingHorizontal: 20,
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {/* Close button */}
+                  <TouchableOpacity
+                    onPress={() => setActiveForm("none")}
+                    className="absolute top-12 right-6 z-10 w-10 h-10 bg-primary rounded-full items-center justify-center shadow-lg shadow-black/10"
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Text className="text-white text-2xl font-bold">×</Text>
+                  </TouchableOpacity>
 
-                    <View className="bg-white rounded-2xl p-7 shadow-xl shadow-black/30">
-                      <View className="flex-row gap-x-6">
-                        {/* Left Column */}
-                        <View className="flex-1 space-y-5">
+                  {/* Form Container */}
+                  <View className="bg-white rounded-3xl p-8 shadow-2xl shadow-black/10">
+                    {/* Header */}
+                    <View className="mb-8">
+                      <Text className="text-3xl font-sans-bold text-txt_blue mb-2">
+                        {activeForm === "signup"
+                          ? "Create Account"
+                          : "Welcome Back"}
+                      </Text>
+                      <Text className="text-gray-500 text-left font-sans-medium">
+                        {activeForm === "signup"
+                          ? "Join our community today"
+                          : "Sign in to continue your journey"}
+                      </Text>
+                    </View>
+
+                    {/* ===== Sign Up Form ===== */}
+                    {activeForm === "signup" && (
+                      <>
+                        <View className="space-y-5">
+                          {/* Name Input */}
                           <View>
-                            <Text className="text-gray-700 font-sans-semibold mb-2 text-sm">
-                              FULL NAME
+                            <Text className="text-gray-700 text-sm font-medium mb-2">
+                              Full Name
                             </Text>
                             <TextInput
-                              className="w-full bg-gray-50 border border-gray-300 rounded-xl font-sans px-4 py-3.5"
                               placeholder="John Doe"
-                              placeholderTextColor="#94A3B8"
+                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
                               value={name}
                               onChangeText={setName}
                               autoCapitalize="words"
                             />
                           </View>
+
+                          {/* Email Input */}
                           <View>
-                            <Text className="text-gray-700 font-sans-semibold mt-2 mb-2 text-sm">
-                              EMAIL ADDRESS
+                            <Text className="text-gray-700 text-sm font-medium mb-2">
+                              Email
                             </Text>
                             <TextInput
-                              className="w-full bg-gray-50 border border-gray-300 rounded-xl font-sans px-4 py-3.5"
-                              placeholder="john@example.com"
-                              placeholderTextColor="#94A3B8"
-                              keyboardType="email-address"
-                              autoCapitalize="none"
+                              placeholder="hello@example.com"
+                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
                               value={email}
                               onChangeText={setEmail}
+                              keyboardType="email-address"
+                              autoCapitalize="none"
                             />
                           </View>
-                        </View>
 
-                        {/* Right Column */}
-                        <View className="flex-1 space-y-5">
+                          {/* Password Input */}
                           <View>
-                            <Text className="text-gray-700 font-sans-semibold mb-2 text-sm">
-                              PASSWORD
+                            <Text className="text-gray-700 text-sm font-medium mb-2">
+                              Password
                             </Text>
                             <TextInput
-                              className="w-full bg-gray-50 border border-gray-300 rounded-xl font-sans px-4 py-3.5"
-                              placeholderTextColor="#94A3B8"
-                              secureTextEntry
+                              // secureTextEntry  <-- remove this line
+                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
                               value={password}
                               onChangeText={setPassword}
                             />
                           </View>
+
+                          {/* Confirm Password */}
                           <View>
-                            <Text className="text-gray-700 font-sans-semibold mb-2 mt-2 text-sm">
-                              CONFIRM PASSWORD
+                            <Text className="text-gray-700 text-sm font-medium mb-2">
+                              Confirm Password
                             </Text>
                             <TextInput
-                              className="w-full bg-gray-50 border border-gray-300 rounded-xl font-sans px-4 py-3.5"
-                              placeholderTextColor="#94A3B8"
-                              secureTextEntry
+                              // secureTextEntry  <-- remove this line
+                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
                               value={confirmPassword}
                               onChangeText={setConfirmPassword}
                             />
                           </View>
-                        </View>
-                      </View>
 
-                      {/* Terms Checkbox */}
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => setAgreeTerms(!agreeTerms)}
-                        className="flex-row items-start mt-6"
-                      >
-                        <View
-                          className={`w-5 h-5 rounded-md border-2 mr-3 items-center justify-center ${
-                            agreeTerms
-                              ? "bg-primary border-primary"
-                              : "border-gray-400"
-                          }`}
-                        >
-                          {agreeTerms && (
-                            <Text className="text-white text-xs font-sans-bold">
-                              ✓
+                          {/* Terms & Conditions */}
+                          <View className="flex-row items-start mt-2">
+                            <TouchableOpacity
+                              className="mt-1 mr-3"
+                              onPress={() => setTermsChecked(!termsChecked)}
+                            >
+                              <View className="w-5 h-5 border border-gray-300 rounded bg-white flex items-center justify-center">
+                                {termsChecked && (
+                                  <Text className="text-primary text-sm leading-none">
+                                    ✓
+                                  </Text>
+                                )}
+                              </View>
+                            </TouchableOpacity>
+
+                            <Text className="text-gray-600 text-sm flex-1">
+                              I agree to the{" "}
+                              <Text className="text-primary font-medium">
+                                Terms of Service
+                              </Text>{" "}
+                              and{" "}
+                              <Text className="text-primary font-medium">
+                                Privacy Policy
+                              </Text>
                             </Text>
-                          )}
+                          </View>
+
+                          {/* Sign Up Button */}
+                          <TouchableOpacity
+                            className="bg-primary py-4 rounded-xl mt-2 shadow-lg shadow-primary/30"
+                            onPress={handleSignUp}
+                            activeOpacity={0.9}
+                          >
+                            <Text className="text-white text-center font-sans-bold text-lg ">
+                              Create Account
+                            </Text>
+                          </TouchableOpacity>
                         </View>
 
-                        <Text className="text-gray-500 text-xs font-sans flex-1 leading-4">
-                          I agree to the{" "}
-                          <Text className="text-primary font-sans-semibold">
-                            Terms of Service
-                          </Text>{" "}
-                          and{" "}
-                          <Text className="text-primary font-sans-semibold">
-                            Privacy Policy
+                        {/* Switch to Sign In */}
+                        <View className="mt-8 pt-6 border-t border-gray-100">
+                          <Text className="text-gray-600 text-center">
+                            Already have an account?{" "}
                           </Text>
-                        </Text>
-                      </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => switchForm("signin")}
+                            className="mt-2"
+                          >
+                            <Text className="text-primary text-center font-sans-bold text-base">
+                              Sign In Now
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </>
+                    )}
 
-                      {/* Create Account Button */}
-                      <TouchableOpacity
-                        className={`rounded-xl py-3.5 mt-6 ${
-                          agreeTerms ? "bg-primary" : "bg-gray-400"
-                        }`}
-                        onPress={handleSignUp}
-                        activeOpacity={0.85}
-                        disabled={!agreeTerms}
-                      >
-                        <Text className="text-white text-center font-sans-bold text-base">
-                          Create Account
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
+                    {/* ===== Sign In Form ===== */}
+                    {activeForm === "signin" && (
+                      <>
+                        <View className="space-y-5">
+                          {/* Email Input */}
+                          <View>
+                            <Text className="text-gray-700 text-sm font-medium mb-2">
+                              Email
+                            </Text>
+                            <TextInput
+                              placeholder="hello@example.com"
+                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
+                              value={signInEmail}
+                              onChangeText={setSignInEmail}
+                              keyboardType="email-address"
+                              autoCapitalize="none"
+                            />
+                          </View>
 
-                    {/* Link to Sign In */}
-                    <TouchableOpacity
-                      onPress={() => switchForm("signin")}
-                      className="mt-8 self-center"
-                    >
-                      <Text className="text-white font-sans-semibold underline text-center">
-                        Already have an account? Click here to Sign In
-                      </Text>
-                    </TouchableOpacity>
-                  </>
-                )}
+                          {/* Password Input */}
+                          <View>
+                            <Text className="text-gray-700 text-sm font-medium mb-2">
+                              Password
+                            </Text>
+                            <TextInput
+                              // secureTextEntry  <-- remove this line
+                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
+                              value={signInPassword}
+                              onChangeText={setSignInPassword}
+                            />
+                          </View>
 
-                {/* ===== Sign In Form ===== */}
-                {activeForm === "signin" && (
-                  <>
-                    <Text className="text-3xl font-sans-bold text-white mb-8">
-                      Sign In
+                          {/* Remember Me */}
+                          <View className="flex-row items-center mt-2">
+                            <TouchableOpacity
+                              className="mr-3"
+                              onPress={() => setRememberMe(!rememberMe)}
+                            >
+                              <View className="w-5 h-5 border border-gray-300 rounded bg-white flex items-center justify-center">
+                                {rememberMe && (
+                                  <Text className="text-primary text-sm leading-none">
+                                    ✓
+                                  </Text>
+                                )}
+                              </View>
+                            </TouchableOpacity>
+
+                            <Text className="text-gray-600 text-sm">
+                              Remember me
+                            </Text>
+                          </View>
+
+                          {/* Sign In Button */}
+                          <TouchableOpacity
+                            className="bg-primary py-4 rounded-xl mt-2 shadow-lg shadow-primary/30"
+                            onPress={handleSignIn}
+                            activeOpacity={0.9}
+                          >
+                            <Text className="text-white text-center font-sans-bold text-lg">
+                              Sign In
+                            </Text>
+                          </TouchableOpacity>
+
+                          {/* Divider */}
+                          <View className="flex-row items-center my-6">
+                            <View className="flex-1 h-px bg-gray-200" />
+                            <Text className="mx-4 text-gray-400 text-sm">
+                              or continue with
+                            </Text>
+                            <View className="flex-1 h-px bg-gray-200" />
+                          </View>
+
+                          {/* Social Login */}
+                          <View className="flex-row justify-center space-x-4">
+                            <TouchableOpacity className="w-14 h-14 border border-gray-200 rounded-xl items-center justify-center">
+                              <Text className="text-2xl">G</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity className="w-14 h-14 border border-gray-200 rounded-xl items-center justify-center">
+                              <Text className="text-2xl">f</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity className="w-14 h-14 border border-gray-200 rounded-xl items-center justify-center">
+                              <Text className="text-2xl">in</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+
+                        {/* Switch to Sign Up */}
+                        <View className="mt-8 pt-6 border-t border-gray-100">
+                          <Text className="text-gray-600 text-center">
+                            Don't have an account?{" "}
+                          </Text>
+                          <TouchableOpacity
+                            onPress={() => switchForm("signup")}
+                            className="mt-2"
+                          >
+                            <Text className="text-primary text-center font-sans-bold text-base">
+                              Sign Up Now
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </>
+                    )}
+                  </View>
+
+                  {/* Footer */}
+                  <View className="mt-8">
+                    <Text className="text-gray-400 text-center text-sm">
+                      By continuing, you agree to our Terms and Privacy Policy
                     </Text>
-
-                    <View className="bg-white rounded-2xl p-7 shadow-xl shadow-black/30 space-y-5">
-                      <View>
-                        <Text className="text-gray-700 font-sans-semibold mb-2 text-sm">
-                          EMAIL ADDRESS
-                        </Text>
-                        <TextInput
-                          className="w-full bg-gray-50 border border-gray-300 rounded-xl font-sans px-4 py-3.5"
-                          placeholder="john@example.com"
-                          placeholderTextColor="#94A3B8"
-                          keyboardType="email-address"
-                          autoCapitalize="none"
-                          value={signInEmail}
-                          onChangeText={setSignInEmail}
-                        />
-                      </View>
-
-                      <View>
-                        <Text className="text-gray-700 font-sans-semibold mb-2 mt-2 text-sm">
-                          PASSWORD
-                        </Text>
-                        <TextInput
-                          className="w-full bg-gray-50 border border-gray-300 rounded-xl font-sans px-4 py-3.5"
-                          placeholderTextColor="#94A3B8"
-                          secureTextEntry
-                          value={signInPassword}
-                          onChangeText={setSignInPassword}
-                        />
-                      </View>
-
-                      <TouchableOpacity
-                        className="bg-primary rounded-xl py-3.5 mt-6"
-                        onPress={handleSignIn}
-                        activeOpacity={0.85}
-                      >
-                        <Text className="text-white text-center font-sans-bold text-base">
-                          Sign In
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* Link to Sign Up */}
-                    <TouchableOpacity
-                      onPress={() => switchForm("signup")}
-                      className="mt-8 self-center"
-                    >
-                      <Text className="text-white font-sans-semibold underline text-center">
-                        Don't have an account? Click here to Sign Up
-                      </Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
-            </ScrollView>
-          </KeyboardAvoidingView>
+                  </View>
+                </ScrollView>
+              </KeyboardAvoidingView>
+            </View>
+          </ImageBackground>
         </Animated.View>
       )}
     </View>
