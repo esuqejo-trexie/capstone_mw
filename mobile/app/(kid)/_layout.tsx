@@ -30,7 +30,7 @@ export default function KidsTabsLayout() {
               iconName = "game-controller";
               break;
             case "parent":
-              iconName = "lock-closed"; // important: parent-only
+              iconName = "lock-closed";
               break;
             default:
               iconName = "home";
@@ -40,10 +40,13 @@ export default function KidsTabsLayout() {
         },
       })}
     >
-      <Tabs.Screen name="home" options={{ tabBarLabel: "Home" }} />
-      <Tabs.Screen name="read" options={{ tabBarLabel: "Read" }} />
-      <Tabs.Screen name="games" options={{ tabBarLabel: "Games" }} />
-      <Tabs.Screen name="parent" options={{ tabBarLabel: "Parent" }} />
+      {/* ✅ ONLY REAL TABS */}
+      <Tabs.Screen name="home" />
+      <Tabs.Screen name="read" />
+      <Tabs.Screen name="games" />
+      <Tabs.Screen name="parent" />
+
+      <Tabs.Screen name="(read)" options={{ href: null }} />
     </Tabs>
   );
 }
