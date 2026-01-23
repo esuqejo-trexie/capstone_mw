@@ -14,12 +14,8 @@ export default function ReadScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
 
-  useEffect((): (() => void) => {
+  useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-
-    return () => {
-      ScreenOrientation.unlockAsync();
-    };
   }, []);
 
   // ✅ Explicitly typed levels

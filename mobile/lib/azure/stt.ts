@@ -37,6 +37,7 @@ export async function sendToSTT(audioUri: string) {
   const url = `${AZURE_STT_ENDPOINT}/openai/deployments/whisper-stt/audio/transcriptions?api-version=2024-10-01-preview`;
 
   const formData = new FormData();
+
   formData.append("file", {
     uri: audioUri,
     name: "speech.m4a",
@@ -44,12 +45,14 @@ export async function sendToSTT(audioUri: string) {
   } as any);
 
   formData.append("model", "whisper-1");
+  formData.append("language", "en" as any);
+
+  formData.append("model", "whisper-1");
 
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "api-key": AZURE_STT_KEY,
-      // ❌ DO NOT set Content-Type manually
     },
     body: formData,
   });

@@ -17,10 +17,6 @@ export default function StoriesScreen() {
 
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-
-    return () => {
-      ScreenOrientation.unlockAsync();
-    };
   }, []);
 
   const handleReadStory = () => {

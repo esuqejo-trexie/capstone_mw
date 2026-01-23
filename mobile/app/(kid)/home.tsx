@@ -5,7 +5,6 @@ import { ImageBackground, Text, View } from "react-native";
 export default function HomeScreen() {
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-
     return () => {
       ScreenOrientation.unlockAsync();
     };
