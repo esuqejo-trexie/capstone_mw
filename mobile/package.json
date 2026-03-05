@@ -34,6 +34,7 @@
     "expo-web-browser": "~15.0.10",
     "firebase": "^12.7.0",
     "lucide-react-native": "^0.562.0",
+    "microsoft-cognitiveservices-speech-sdk": "^1.48.0",
     "nativewind": "^4.2.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",

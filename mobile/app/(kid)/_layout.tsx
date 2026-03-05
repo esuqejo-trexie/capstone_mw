@@ -5,7 +5,7 @@ export default function KidsTabsLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => {
-        const hideTabBar = route.name === "(read)";
+        const hideTabBar = route.name === "(read)" || route.name === "(games)";
 
         return {
           headerShown: false,
@@ -14,9 +14,9 @@ export default function KidsTabsLayout() {
           tabBarInactiveTintColor: "#9CA3AF",
 
           tabBarStyle: hideTabBar
-            ? { display: "none" } // 👈 HIDE on read screens
+            ? { display: "none" }
             : {
-                height: 56, // 👈 slightly slimmer
+                height: 56,
                 paddingBottom: 6,
                 paddingTop: 6,
               },
@@ -52,8 +52,9 @@ export default function KidsTabsLayout() {
       <Tabs.Screen name="games" />
       <Tabs.Screen name="parent" />
 
-      {/* HIDDEN GROUP */}
+      {/* HIDDEN ROUTE GROUPS */}
       <Tabs.Screen name="(read)" options={{ href: null }} />
+      <Tabs.Screen name="(games)" options={{ href: null }} />
     </Tabs>
   );
 }

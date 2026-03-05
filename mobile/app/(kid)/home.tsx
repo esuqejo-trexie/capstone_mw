@@ -1,10 +1,16 @@
+import { useLocalSearchParams } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { useEffect } from "react";
 import { ImageBackground, Text, View } from "react-native";
 
 export default function HomeScreen() {
+  const { learner } = useLocalSearchParams();
+
+  const learnerData = learner ? JSON.parse(learner as string) : null;
+
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+
     return () => {
       ScreenOrientation.unlockAsync();
     };
@@ -17,7 +23,9 @@ export default function HomeScreen() {
       className="flex-1"
     >
       <View className="flex-1 bg-white/80 items-center justify-center">
-        <Text className="text-2xl font-bold">Home Screen</Text>
+        <Text className="text-3xl font-bold">
+          Hello, {learnerData?.name ?? "Learner"}!
+        </Text>
       </View>
     </ImageBackground>
   );

@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ImageBackground,
   KeyboardAvoidingView,
@@ -11,20 +11,34 @@ import {
   View,
 } from "react-native";
 
+import {
+  collectionGroup,
+  getDocs,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { auth, db } from "../firebaseConfig";
+
 export default function ParentGate() {
   const router = useRouter();
+
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [learnerCode, setLearnerCode] = useState<string | null>(null);
+  const [learner, setLearner] = useState<any>(null);
+  const [learnerRef, setLearnerRef] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const TEST_PARENT_KID_CODE = "ABC123";
-
-  // Lock screen orientation to portrait
+  // Lock orientation
   useEffect(() => {
     const lockOrientation = async () => {
       await ScreenOrientation.lockAsync(
-        ScreenOrientation.OrientationLock.PORTRAIT
+        ScreenOrientation.OrientationLock.PORTRAIT,
       );
     };
+
     lockOrientation();
 
     return () => {
@@ -32,14 +46,78 @@ export default function ParentGate() {
     };
   }, []);
 
-  const handleAccess = () => {
-    if (code.trim().toUpperCase() !== TEST_PARENT_KID_CODE) {
+  // Check authentication
+  useEffect(() => {
+    if (!auth.currentUser) {
+      router.replace("/");
+      return;
+    }
+
+    fetchLearner();
+  }, []);
+
+  // Fetch learner linked to parent
+  const fetchLearner = async () => {
+    try {
+      const parentEmail = auth.currentUser?.email;
+
+      if (!parentEmail) return;
+
+      const q = query(
+        collectionGroup(db, "learners"),
+        where("parentEmail", "==", parentEmail),
+      );
+
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        setError("No learner linked to this parent account.");
+        setLoading(false);
+        return;
+      }
+
+      const docSnap = snapshot.docs[0];
+      const learnerData = docSnap.data();
+
+      setLearner(learnerData);
+      setLearnerCode(learnerData.learnerCode);
+      setLearnerRef(docSnap.ref);
+      setLoading(false);
+    } catch (err) {
+      console.log(err);
+      setError("Failed to load learner data.");
+      setLoading(false);
+    }
+  };
+
+  const handleAccess = async () => {
+    if (!learnerCode) return;
+
+    if (code.trim().toUpperCase() !== learnerCode) {
       setError("Invalid access code");
       return;
     }
 
     setError("");
-    router.replace("/(kid)/home");
+
+    // Update learner status from Invited → Active (only once)
+    if (learnerRef && learner?.status === "Invited") {
+      try {
+        await updateDoc(learnerRef, {
+          status: "Active",
+          activatedAt: serverTimestamp(),
+        });
+      } catch (err) {
+        console.log("Status update failed:", err);
+      }
+    }
+
+    router.replace({
+      pathname: "/(kid)/home",
+      params: {
+        learner: JSON.stringify(learner),
+      },
+    });
   };
 
   return (
@@ -49,7 +127,6 @@ export default function ParentGate() {
         resizeMode="cover"
         className="flex-1"
       >
-        {/* White overlay */}
         <View className="flex-1 bg-white/80">
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -64,6 +141,12 @@ export default function ParentGate() {
                 Enter the parent–kid access code to continue.
               </Text>
 
+              {loading && (
+                <Text className="text-center text-gray-500 mb-4">
+                  Loading learner information...
+                </Text>
+              )}
+
               <TextInput
                 value={code}
                 onChangeText={(text) => {
@@ -72,6 +155,7 @@ export default function ParentGate() {
                 }}
                 placeholder="Access Code"
                 autoCapitalize="characters"
+                editable={!loading}
                 className="border border-gray-300 rounded-xl px-4 py-3 mb-3 text-center tracking-widest bg-white"
               />
 
@@ -81,7 +165,10 @@ export default function ParentGate() {
 
               <TouchableOpacity
                 onPress={handleAccess}
-                className="bg-primary rounded-3xl py-3"
+                disabled={loading}
+                className={`rounded-3xl py-3 ${
+                  loading ? "bg-gray-400" : "bg-primary"
+                }`}
               >
                 <Text className="text-white text-center font-sans-semibold text-lg">
                   Enter Kid Mode

@@ -56,7 +56,7 @@ export default function StoriesScreen() {
                 adjustsFontSizeToFit
                 numberOfLines={1}
               >
-                Read Story
+                Reading Exercise 1
               </Text>
             </TouchableOpacity>
           </View>

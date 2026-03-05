@@ -18,8 +18,18 @@ export default function ReadScreen() {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
   }, []);
 
-  // ✅ Explicitly typed levels
-  const levels: number[] = [1, 2, 3, 4];
+  type Level = {
+    id: number;
+    name: string;
+    key: string;
+  };
+
+  const levels: Level[] = [
+    { id: 1, name: "Spark Learner", key: "sparkLearner" },
+    { id: 2, name: "Ember Learner", key: "emberLearner" },
+    { id: 3, name: "Flame Learner", key: "flameLearner" },
+    { id: 4, name: "Blaze Learner", key: "blazeLearner" },
+  ];
 
   // ✅ Explicitly typed handler
   const handleLevelPress = (level: number): void => {
@@ -48,20 +58,20 @@ export default function ReadScreen() {
 
           {/* Level Cards */}
           <View className="flex-row justify-around items-center w-full max-w-5xl mx-auto flex-1">
-            {levels.map((level: number) => (
+            {levels.map((level: Level) => (
               <TouchableOpacity
-                key={level}
+                key={level.id}
                 activeOpacity={0.85}
-                onPress={(): void => handleLevelPress(level)}
-                className="bg-blue-500 rounded-3xl w-[20%] aspect-[3/4] max-h-[80%] items-center justify-center shadow-xl border-4 border-blue-400"
+                onPress={(): void => handleLevelPress(level.id)}
+                className="bg-blue-500 rounded-3xl w-[20%] aspect-[3/4] max-h-[80%] items-center justify-center shadow-xl border-4 border-blue-400 px-3"
               >
                 <Text
                   className="text-white font-sans-extrabold text-center"
-                  style={{ fontSize: width * 0.035 }}
+                  style={{ fontSize: width * 0.028 }}
                   adjustsFontSizeToFit
-                  numberOfLines={1}
+                  numberOfLines={2}
                 >
-                  Level {level}
+                  {level.name}
                 </Text>
               </TouchableOpacity>
             ))}
