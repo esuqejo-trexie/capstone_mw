@@ -12,15 +12,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  sendToSTT,
-  startRecording,
-  stopRecording,
-} from "../../../lib/azure/stt";
+import { startRecording, stopRecording } from "../../../lib/audio/recorder";
+import { assessPronunciation } from "../../../lib/azure/pronunciationAssessment";
 import { speakText } from "../../../lib/azure/tts";
-import { compareReading } from "../../../lib/reading/compareText";
 import { generateAIFeedback } from "../../../lib/reading/feedbackGenerator";
 import { typography } from "../../../lib/ui/typography";
+
+type WordResult = {
+  word: string;
+  accuracy?: number;
+  errorType?: string;
+};
 
 export default function StoryScreen() {
   const { level } = useLocalSearchParams<{ level?: string }>();
@@ -48,7 +50,7 @@ export default function StoryScreen() {
     };
   }, []);
 
-  const sentence = "The cat is sitting on the mat.";
+  const sentence = "red hat";
 
   const handleStart = async () => {
     setTranscript(null);
@@ -60,27 +62,66 @@ export default function StoryScreen() {
 
   const handleStop = async () => {
     setIsRecording(false);
-    const audioBlob = await stopRecording();
-    if (!audioBlob) return;
+
+    const audioUri = await stopRecording();
+    if (!audioUri) return;
 
     try {
-      const result = await sendToSTT(audioBlob);
-      const text = result?.text ?? "No text recognized";
-      setTranscript(text);
+      const json: any = await assessPronunciation(audioUri, sentence);
 
-      const score = compareReading(sentence, text);
+      if (!json?.NBest?.length) {
+        throw new Error("No speech recognized");
+      }
+
+      console.log("AZURE RAW RESPONSE:", json);
+
+      const nbest = json.NBest[0];
+      const assessment = nbest.PronunciationAssessment;
+
+      const words: WordResult[] =
+        nbest?.Words?.map((w: any) => ({
+          word: w.Word,
+          accuracy: w.PronunciationAssessment?.AccuracyScore,
+          errorType: w.PronunciationAssessment?.ErrorType,
+        })) || [];
+
+      const recognizedText = json.DisplayText || "";
+      setTranscript(recognizedText);
+
+      const missed = words
+        .filter((w) => w.errorType === "Omission")
+        .map((w) => w.word);
+
+      const extra = words
+        .filter((w) => w.errorType === "Insertion")
+        .map((w) => w.word);
+
+      const mispronounced = words
+        .filter((w) => w.errorType === "Mispronunciation")
+        .map((w) => w.word);
+
+      const accuracy = Math.round(assessment?.AccuracyScore || 0);
+
+      const score = {
+        accuracy,
+        correct: words.filter((w) => w.errorType === "None").length,
+        total: words.length,
+        missed,
+        extra,
+      };
+
       setReadingResult(score);
 
       setIsGeneratingFeedback(true);
 
       const feedback = await generateAIFeedback({
         targetSentence: sentence,
-        transcription: text,
-        accuracy: score.accuracy,
+        transcription: recognizedText,
+        accuracy,
         errors: {
-          missed: score.missed,
-          extra: score.extra,
-          mispronounced: [],
+          missed,
+          extra,
+          mispronounced,
         },
       });
 
@@ -89,6 +130,7 @@ export default function StoryScreen() {
       setShowFeedback(true);
     } catch (error) {
       console.error("Reading error:", error);
+
       setTranscript("Error recognizing speech");
       setAiFeedback("Let’s try again together!");
       setIsGeneratingFeedback(false);
