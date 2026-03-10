@@ -20,6 +20,7 @@ import {
   where,
 } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
+import { setLearnerSession } from "../lib/sessions/kidSession";
 
 export default function ParentGate() {
   const router = useRouter();
@@ -56,11 +57,9 @@ export default function ParentGate() {
     fetchLearner();
   }, []);
 
-  // Fetch learner linked to parent
   const fetchLearner = async () => {
     try {
       const parentEmail = auth.currentUser?.email;
-
       if (!parentEmail) return;
 
       const q = query(
@@ -79,9 +78,22 @@ export default function ParentGate() {
       const docSnap = snapshot.docs[0];
       const learnerData = docSnap.data();
 
-      setLearner(learnerData);
+      // Extract IDs from Firestore path
+      const learnerId = docSnap.id;
+      const classId = docSnap.ref.parent.parent?.id;
+      const schoolId = docSnap.ref.parent.parent?.parent?.parent?.id;
+
+      const learnerObject = {
+        learnerId,
+        classId,
+        schoolId,
+        ...learnerData,
+      };
+
+      setLearner(learnerObject);
       setLearnerCode(learnerData.learnerCode);
       setLearnerRef(docSnap.ref);
+
       setLoading(false);
     } catch (err) {
       console.log(err);
@@ -98,9 +110,14 @@ export default function ParentGate() {
       return;
     }
 
+    if (!learner) {
+      setError("Learner data not loaded.");
+      return;
+    }
+
     setError("");
 
-    // Update learner status from Invited → Active (only once)
+    // Update learner status from Invited → Active
     if (learnerRef && learner?.status === "Invited") {
       try {
         await updateDoc(learnerRef, {
@@ -112,12 +129,26 @@ export default function ParentGate() {
       }
     }
 
-    router.replace({
-      pathname: "/(kid)/home",
-      params: {
-        learner: JSON.stringify(learner),
-      },
+    // Save learner session
+    setLearnerSession({
+      learnerId: learner.learnerId,
+      schoolId: learner.schoolId,
+      classId: learner.classId,
+      name: learner.name,
+      learnerCode: learner.learnerCode,
+      readingProfile: learner.readingProfile,
     });
+
+    console.log("SESSION SET:", {
+      learnerId: learner.learnerId,
+      schoolId: learner.schoolId,
+      classId: learner.classId,
+      name: learner.name,
+      learnerCode: learner.learnerCode,
+      readingProfile: learner.readingProfile,
+    });
+
+    router.replace("/(kid)/home");
   };
 
   return (

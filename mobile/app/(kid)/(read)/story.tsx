@@ -1,10 +1,10 @@
-import { useLocalSearchParams } from "expo-router";
-import * as ScreenOrientation from "expo-screen-orientation";
-import { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import {
   Image,
   ImageBackground,
   Modal,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -12,11 +12,28 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { saveReadingSession } from "../../../lib/reading/saveReadingSession";
+import { getLearnerSession } from "../../../lib/sessions/kidSession";
+
+import { useEffect, useRef } from "react";
+import { Animated } from "react-native";
 import { startRecording, stopRecording } from "../../../lib/audio/recorder";
 import { assessPronunciation } from "../../../lib/azure/pronunciationAssessment";
 import { speakText } from "../../../lib/azure/tts";
 import { generateAIFeedback } from "../../../lib/reading/feedbackGenerator";
 import { typography } from "../../../lib/ui/typography";
+
+import { emergingContent } from "../../../lib/reading/emergingContent";
+
+// NEW: Emerging activity engine
+import {
+  computeEmergingFinalScore,
+  computePronunciation,
+  computeStars,
+  getEmergingStep,
+  getPracticeMessage,
+  isWordCorrect,
+} from "../(read)/activities/emergingActivity";
 
 type WordResult = {
   word: string;
@@ -25,14 +42,39 @@ type WordResult = {
 };
 
 export default function StoryScreen() {
-  const { level } = useLocalSearchParams<{ level?: string }>();
-  const { height } = useWindowDimensions();
+  const { level, exercise: exerciseParam } = useLocalSearchParams<{
+    level?: string;
+    exercise?: string;
+  }>();
+
+  const { width, height } = useWindowDimensions();
+
+  const { schoolId, classId, learnerId } = getLearnerSession();
+
+  const scale = Math.min(width / 812, height / 375);
+  const rf = (size: number) => Math.round(size * scale);
+  const rfs = (size: number) => {
+    const scaled = size * scale;
+    const min = size * 0.9;
+    return Math.max(min, scaled);
+  };
+
+  const initialExerciseIndex = exerciseParam
+    ? Math.max(Number(exerciseParam) - 1, 0)
+    : 0;
+
+  const [exerciseIndex] = useState(initialExerciseIndex);
+
+  const [practiceStep, setPracticeStep] = useState(0);
+  const [practiceAttempts, setPracticeAttempts] = useState(0);
+  const [practiceMessage, setPracticeMessage] = useState("");
+  const [showPracticeModal, setShowPracticeModal] = useState(false);
 
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState<string | null>(null);
 
   const [readingResult, setReadingResult] = useState<{
-    accuracy: number;
+    stars: number;
     correct: number;
     total: number;
     missed: string[];
@@ -43,14 +85,30 @@ export default function StoryScreen() {
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
-  useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-    return () => {
-      ScreenOrientation.unlockAsync();
-    };
-  }, []);
+  const starScale = useRef(new Animated.Value(0)).current;
 
-  const sentence = "red hat";
+  useEffect(() => {
+    if (showFeedback) {
+      starScale.setValue(0);
+
+      Animated.spring(starScale, {
+        toValue: 1,
+        friction: 5,
+        tension: 120,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showFeedback]);
+
+  const router = useRouter();
+
+  const activity = emergingContent[exerciseIndex];
+  const sentence = activity.text;
+
+  const { words, isPhraseStep, displayText } = getEmergingStep(
+    sentence,
+    practiceStep,
+  );
 
   const handleStart = async () => {
     setTranscript(null);
@@ -66,6 +124,50 @@ export default function StoryScreen() {
     const audioUri = await stopRecording();
     if (!audioUri) return;
 
+    // WORD PRACTICE STEP
+    if (!isPhraseStep) {
+      try {
+        const json: any = await assessPronunciation(audioUri, displayText);
+
+        if (!json?.NBest?.length) {
+          setPracticeMessage("Let's try again!");
+          setShowPracticeModal(true);
+          return;
+        }
+
+        const nbest = json.NBest[0];
+
+        const wordResults: WordResult[] =
+          nbest?.Words?.map((w: any) => ({
+            word: w.Word,
+            accuracy: w.PronunciationAssessment?.AccuracyScore,
+            errorType: w.PronunciationAssessment?.ErrorType,
+          })) || [];
+
+        const correct = isWordCorrect(wordResults);
+
+        const { message, nextAttempts, proceed } = getPracticeMessage(
+          correct,
+          practiceAttempts,
+        );
+
+        setPracticeMessage(message);
+        setPracticeAttempts(nextAttempts);
+        setShowPracticeModal(true);
+
+        if (proceed) {
+          setPracticeStep((prev) => prev + 1);
+        }
+      } catch (error) {
+        console.error("Practice step error:", error);
+        setPracticeMessage("Let's try again!");
+        setShowPracticeModal(true);
+      }
+
+      return;
+    }
+
+    // FINAL PHRASE STEP
     try {
       const json: any = await assessPronunciation(audioUri, sentence);
 
@@ -73,10 +175,13 @@ export default function StoryScreen() {
         throw new Error("No speech recognized");
       }
 
-      console.log("AZURE RAW RESPONSE:", json);
-
       const nbest = json.NBest[0];
       const assessment = nbest.PronunciationAssessment;
+
+      const accuracyScore = assessment?.AccuracyScore || 0;
+      const completenessScore = assessment?.CompletenessScore || 0;
+      const fluencyScore = assessment?.FluencyScore || 0;
+      const pronScore = assessment?.PronScore || 0;
 
       const words: WordResult[] =
         nbest?.Words?.map((w: any) => ({
@@ -100,10 +205,18 @@ export default function StoryScreen() {
         .filter((w) => w.errorType === "Mispronunciation")
         .map((w) => w.word);
 
-      const accuracy = Math.round(assessment?.AccuracyScore || 0);
+      // COMPUTE SCORES
+      const pronunciation = computePronunciation(
+        accuracyScore,
+        completenessScore,
+      );
+
+      const finalScore = computeEmergingFinalScore(pronunciation);
+
+      const stars = computeStars(finalScore);
 
       const score = {
-        accuracy,
+        stars,
         correct: words.filter((w) => w.errorType === "None").length,
         total: words.length,
         missed,
@@ -112,12 +225,27 @@ export default function StoryScreen() {
 
       setReadingResult(score);
 
+      // SAVE SESSION TO FIRESTORE
+      await saveReadingSession({
+        schoolId,
+        classId,
+        learnerId,
+        activity: exerciseIndex + 1,
+        profile: "Emerging",
+        accuracyScore,
+        completenessScore,
+        fluencyScore,
+        pronScore,
+        pronunciationScore: pronunciation,
+        stars,
+      });
+
       setIsGeneratingFeedback(true);
 
       const feedback = await generateAIFeedback({
         targetSentence: sentence,
         transcription: recognizedText,
-        accuracy,
+        accuracy: finalScore,
         errors: {
           missed,
           extra,
@@ -162,57 +290,83 @@ export default function StoryScreen() {
       className="flex-1"
     >
       <View className="flex-1 bg-white/80">
-        <SafeAreaView className="flex-1 px-6 py-4">
-          {/* HEADER */}
+        <SafeAreaView
+          style={{
+            paddingHorizontal: rf(24),
+            paddingVertical: rf(16),
+          }}
+          className="flex-1"
+        >
           <Text
-            style={{ fontSize: typography.header }}
-            className="font-sans-bold text-secondary mb-4"
+            style={{ fontSize: rf(typography.header), marginBottom: rf(16) }}
+            className="font-sans-bold text-secondary"
           >
-            Level {level}
+            Activity {exerciseIndex + 1}
           </Text>
 
-          {/* MAIN */}
           <View className="flex-1 items-center justify-center">
             <View
-              className="flex-row bg-white rounded-[40px] border-4 border-blue-300 shadow-2xl w-full max-w-[900px]"
-              style={{ minHeight: height * 0.55 }}
+              className="flex-row bg-white border-4 border-blue-300 shadow-2xl w-full"
+              style={{
+                borderRadius: rf(40),
+                maxWidth: 900,
+                minHeight: rf(200),
+              }}
             >
-              {/* LEFT PAGE */}
-              <View className="w-1/2 items-center justify-center p-6 border-r-2 border-blue-200">
+              <View
+                style={{
+                  padding: rf(24),
+                }}
+                className="w-1/2 items-center justify-center border-r-2 border-blue-200"
+              >
                 <Image
-                  source={require("../../../assets/stories/cat.webp")}
+                  source={activity.image}
                   resizeMode="contain"
                   style={{
                     width: "100%",
                     height: "100%",
-                    maxHeight: height * 0.45,
+                    maxHeight: rf(180),
                   }}
                 />
               </View>
 
-              {/* RIGHT PAGE */}
-              <View className="w-1/2 p-6 justify-between">
+              <View
+                style={{ padding: rf(24) }}
+                className="w-1/2 justify-between"
+              >
                 <View className="flex-1 justify-center">
                   <Text
-                    style={{ fontSize: typography.story }}
-                    className="text-center font-sans-extrabold text-gray-800 leading-snug"
+                    style={{
+                      fontSize: rf(typography.story),
+                      lineHeight: rf(typography.story + 6),
+                    }}
+                    className="text-center font-sans-extrabold text-gray-800"
                   >
-                    {sentence}
+                    {displayText}
                   </Text>
                 </View>
 
-                <View className="flex-row justify-center gap-6 mt-6">
+                <View
+                  style={{ marginTop: rf(20), gap: rf(20) }}
+                  className="flex-row justify-center"
+                >
                   <TouchableOpacity
-                    onPress={() => speakText(sentence)}
+                    onPress={() => speakText(displayText)}
                     disabled={isRecording}
-                    className={`rounded-full px-8 py-4 border-2 ${
+                    style={{
+                      paddingVertical: rf(14),
+                      paddingHorizontal: rf(28),
+                      borderRadius: rf(50),
+                      borderWidth: 2,
+                    }}
+                    className={`${
                       isRecording
                         ? "bg-blue-300 border-blue-200"
                         : "bg-blue-500 border-blue-400"
                     }`}
                   >
                     <Text
-                      style={{ fontSize: typography.button }}
+                      style={{ fontSize: rf(typography.button) }}
                       className="text-white font-sans-extrabold"
                     >
                       Listen
@@ -222,10 +376,16 @@ export default function StoryScreen() {
                   {!isRecording ? (
                     <TouchableOpacity
                       onPress={handleStart}
-                      className="bg-green-500 rounded-full px-8 py-4 border-2 border-green-400"
+                      style={{
+                        paddingVertical: rf(14),
+                        paddingHorizontal: rf(28),
+                        borderRadius: rf(50),
+                        borderWidth: 2,
+                      }}
+                      className="bg-green-500 border-green-400"
                     >
                       <Text
-                        style={{ fontSize: typography.button }}
+                        style={{ fontSize: rf(typography.button) }}
                         className="text-white font-sans-extrabold"
                       >
                         Read
@@ -234,10 +394,16 @@ export default function StoryScreen() {
                   ) : (
                     <TouchableOpacity
                       onPress={handleStop}
-                      className="bg-red-500 rounded-full px-8 py-4 border-2 border-red-400"
+                      style={{
+                        paddingVertical: rf(14),
+                        paddingHorizontal: rf(28),
+                        borderRadius: rf(50),
+                        borderWidth: 2,
+                      }}
+                      className="bg-red-500 border-red-400"
                     >
                       <Text
-                        style={{ fontSize: typography.button }}
+                        style={{ fontSize: rf(typography.button) }}
                         className="text-white font-sans-extrabold"
                       >
                         Stop
@@ -249,63 +415,143 @@ export default function StoryScreen() {
             </View>
           </View>
 
+          {/* PRACTICE MODAL */}
+          <Modal visible={showPracticeModal} transparent animationType="fade">
+            <View className="flex-1 bg-black/50 items-center justify-center">
+              <View className="bg-white rounded-3xl p-8 items-center w-[40%]">
+                <Text className="text-2xl font-sans-bold text-secondary mb-4">
+                  {practiceMessage}
+                </Text>
+
+                <TouchableOpacity
+                  onPress={() => setShowPracticeModal(false)}
+                  className="bg-blue-500 px-8 py-3 rounded-full"
+                >
+                  <Text className="text-white font-sans-bold">Continue</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
           {/* FEEDBACK MODAL */}
           <Modal visible={showFeedback} transparent animationType="fade">
             <View className="flex-1 bg-black/50 items-center justify-center">
-              <View className="bg-white rounded-3xl px-8 py-6 w-[80%] max-w-[520px] items-center gap-4 shadow-xl">
-                <Text
-                  style={{ fontSize: typography.header }}
-                  className="font-sans-bold text-secondary"
+              <View
+                style={{
+                  width: width * 0.72,
+                  maxHeight: height * 0.85,
+                  borderRadius: rf(28),
+                  paddingHorizontal: rf(28),
+                  paddingTop: rf(24),
+                  paddingBottom: rf(16),
+                }}
+                className="bg-white"
+              >
+                <ScrollView
+                  showsVerticalScrollIndicator={true}
+                  contentContainerStyle={{
+                    alignItems: "center",
+                    paddingBottom: rf(10),
+                  }}
                 >
-                  Reading Feedback
-                </Text>
+                  {/* TITLE */}
+                  <Text
+                    style={{
+                      fontSize: rfs(typography.header),
+                      marginBottom: rf(6),
+                    }}
+                    className="font-sans-bold text-secondary text-center"
+                  >
+                    Reading Feedback
+                  </Text>
 
-                {readingResult && (
-                  <>
-                    <Text
-                      style={{ fontSize: typography.body }}
-                      className="font-sans-extrabold text-green-600"
-                    >
-                      Accuracy: {readingResult.accuracy}%
-                    </Text>
-
-                    <Text
-                      style={{ fontSize: typography.body }}
-                      className="text-gray-700 text-center"
-                    >
-                      {isGeneratingFeedback
-                        ? "Thinking of feedback..."
-                        : aiFeedback ||
-                          getFallbackFeedback(readingResult.accuracy)}
-                    </Text>
-
-                    <View className="bg-gray-100 rounded-xl px-4 py-3 w-full">
-                      <Text
-                        style={{ fontSize: typography.caption }}
-                        className="font-sans-bold text-secondary"
+                  {/* SCORE */}
+                  {readingResult && (
+                    <>
+                      <Animated.Text
+                        style={{
+                          fontSize: rfs(70),
+                          marginBottom: rf(12),
+                          transform: [{ scale: starScale }],
+                          textShadowColor: "#FFD700",
+                          textShadowOffset: { width: 0, height: 0 },
+                          textShadowRadius: 10,
+                        }}
                       >
-                        You said:
-                      </Text>
-                      <Text
-                        style={{ fontSize: typography.caption }}
-                        className="text-gray-700 mt-1"
-                      >
-                        {transcript}
-                      </Text>
-                    </View>
-                  </>
-                )}
+                        {readingResult.stars === 0
+                          ? "😊"
+                          : "⭐".repeat(readingResult.stars)}
+                      </Animated.Text>
 
-                <View className="flex-row gap-4 mt-4">
+                      {/* AI FEEDBACK */}
+                      <Text
+                        style={{
+                          fontSize: rfs(typography.body),
+                          lineHeight: rf(typography.body + 8),
+                          marginBottom: rf(16),
+                          textAlign: "center",
+                        }}
+                        className="text-gray-700"
+                      >
+                        {isGeneratingFeedback
+                          ? "Thinking of feedback..."
+                          : aiFeedback ||
+                            getFallbackFeedback(readingResult.stars)}
+                      </Text>
+
+                      {/* TRANSCRIPT */}
+                      <View
+                        style={{
+                          padding: rf(16),
+                          borderRadius: rf(16),
+                          marginBottom: rf(18),
+                        }}
+                        className="bg-gray-100 w-full"
+                      >
+                        <Text
+                          style={{ fontSize: rf(typography.caption) }}
+                          className="font-sans-bold text-secondary"
+                        >
+                          You said:
+                        </Text>
+
+                        <Text
+                          style={{
+                            fontSize: rfs(typography.caption),
+                            marginTop: rf(6),
+                          }}
+                          className="text-gray-700"
+                        >
+                          {transcript}
+                        </Text>
+                      </View>
+                    </>
+                  )}
+                </ScrollView>
+
+                {/* BUTTONS */}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    gap: rf(16),
+                    marginTop: rf(6),
+                  }}
+                >
                   <TouchableOpacity
                     onPress={() => {
                       setShowFeedback(false);
                       handleReset();
                     }}
-                    className="bg-blue-500 rounded-full px-6 py-3"
+                    style={{
+                      paddingHorizontal: rf(26),
+                      paddingVertical: rf(12),
+                      borderRadius: rf(50),
+                    }}
+                    className="bg-blue-500"
                   >
                     <Text
-                      style={{ fontSize: typography.button }}
+                      style={{ fontSize: rf(typography.button) }}
                       className="text-white font-sans-bold"
                     >
                       Try Again
@@ -313,11 +559,19 @@ export default function StoryScreen() {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    onPress={() => setShowFeedback(false)}
-                    className="bg-green-500 rounded-full px-6 py-3"
+                    onPress={() => {
+                      setShowFeedback(false);
+                      router.back();
+                    }}
+                    style={{
+                      paddingHorizontal: rf(26),
+                      paddingVertical: rf(12),
+                      borderRadius: rf(50),
+                    }}
+                    className="bg-green-500"
                   >
                     <Text
-                      style={{ fontSize: typography.button }}
+                      style={{ fontSize: rf(typography.button) }}
                       className="text-white font-sans-bold"
                     >
                       Continue
