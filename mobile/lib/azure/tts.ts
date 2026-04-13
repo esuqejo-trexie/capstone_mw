@@ -60,9 +60,6 @@ async function playAzureAudio(ssml: string) {
 ================================ */
 export async function speakText(text: string) {
   try {
-    console.log("Azure TTS KEY:", AZURE_TTS_KEY);
-    console.log("Azure TTS REGION:", AZURE_TTS_REGION);
-
     const ssml = `
       <speak version="1.0" xml:lang="en-US">
         <voice name="en-US-Jane:DragonHDLatestNeural">
@@ -86,12 +83,15 @@ export async function speakWord(text: string) {
   try {
     const clean = text.trim();
 
-    const ssml =
-      `<speak version="1.0" xml:lang="en-US">` +
-      `<voice name="en-US-AriaNeural">` +
-      `<prosody rate="-10%" pitch="+2st">` +
-      clean +
-      `</prosody></voice></speak>`;
+    const ssml = `
+      <speak version="1.0" xml:lang="en-US">
+        <voice name="en-US-Jane:DragonHDLatestNeural">
+          <prosody rate="-15%" pitch="+1st">
+            ${text}
+          </prosody>
+        </voice>
+      </speak>
+    `;
 
     await playAzureAudio(ssml);
   } catch (error) {

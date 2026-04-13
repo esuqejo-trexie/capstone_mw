@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   Image,
   ImageBackground,
   Modal,
@@ -12,11 +13,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { saveReadingSession } from "../../../lib/reading/saveReadingSession";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "../../../firebaseConfig";
+
+import { submitReadingResult } from "../../../lib/reading/submitReadingResult";
 import { getLearnerSession } from "../../../lib/sessions/kidSession";
 
-import { useEffect, useRef } from "react";
-import { Animated } from "react-native";
 import { startRecording, stopRecording } from "../../../lib/audio/recorder";
 import { assessPronunciation } from "../../../lib/azure/pronunciationAssessment";
 import { speakText } from "../../../lib/azure/tts";
@@ -25,7 +27,6 @@ import { typography } from "../../../lib/ui/typography";
 
 import { emergingContent } from "../../../lib/reading/emergingContent";
 
-// NEW: Emerging activity engine
 import {
   computeEmergingFinalScore,
   computePronunciation,
@@ -33,7 +34,7 @@ import {
   getEmergingStep,
   getPracticeMessage,
   isWordCorrect,
-} from "../(read)/activities/emergingActivity";
+} from "./activities/emergingActivity";
 
 type WordResult = {
   word: string;
@@ -47,6 +48,7 @@ export default function StoryScreen() {
     exercise?: string;
   }>();
 
+  const router = useRouter();
   const { width, height } = useWindowDimensions();
 
   const { schoolId, classId, learnerId } = getLearnerSession();
@@ -64,6 +66,8 @@ export default function StoryScreen() {
     : 0;
 
   const [exerciseIndex] = useState(initialExerciseIndex);
+
+  const [readingProfile, setReadingProfile] = useState("Spark");
 
   const [practiceStep, setPracticeStep] = useState(0);
   const [practiceAttempts, setPracticeAttempts] = useState(0);
@@ -87,6 +91,31 @@ export default function StoryScreen() {
 
   const starScale = useRef(new Animated.Value(0)).current;
 
+  /* LOAD LEARNER PROFILE */
+
+  useEffect(() => {
+    const learnerRef = doc(
+      db,
+      "schools",
+      schoolId,
+      "classes",
+      classId,
+      "learners",
+      learnerId,
+    );
+
+    const unsubscribe = onSnapshot(learnerRef, (snapshot) => {
+      const data: any = snapshot.data();
+      if (data?.readingProfile) {
+        setReadingProfile(data.readingProfile);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [schoolId, classId, learnerId]);
+
+  /* STAR ANIMATION */
+
   useEffect(() => {
     if (showFeedback) {
       starScale.setValue(0);
@@ -99,8 +128,6 @@ export default function StoryScreen() {
       }).start();
     }
   }, [showFeedback]);
-
-  const router = useRouter();
 
   const activity = emergingContent[exerciseIndex];
   const sentence = activity.text;
@@ -124,7 +151,6 @@ export default function StoryScreen() {
     const audioUri = await stopRecording();
     if (!audioUri) return;
 
-    // WORD PRACTICE STEP
     if (!isPhraseStep) {
       try {
         const json: any = await assessPronunciation(audioUri, displayText);
@@ -167,7 +193,6 @@ export default function StoryScreen() {
       return;
     }
 
-    // FINAL PHRASE STEP
     try {
       const json: any = await assessPronunciation(audioUri, sentence);
 
@@ -205,14 +230,12 @@ export default function StoryScreen() {
         .filter((w) => w.errorType === "Mispronunciation")
         .map((w) => w.word);
 
-      // COMPUTE SCORES
       const pronunciation = computePronunciation(
         accuracyScore,
         completenessScore,
       );
 
       const finalScore = computeEmergingFinalScore(pronunciation);
-
       const stars = computeStars(finalScore);
 
       const score = {
@@ -225,13 +248,12 @@ export default function StoryScreen() {
 
       setReadingResult(score);
 
-      // SAVE SESSION TO FIRESTORE
-      await saveReadingSession({
+      await submitReadingResult({
         schoolId,
         classId,
         learnerId,
         activity: exerciseIndex + 1,
-        profile: "Emerging",
+        profile: readingProfile,
         accuracyScore,
         completenessScore,
         fluencyScore,
@@ -277,12 +299,6 @@ export default function StoryScreen() {
     }
   };
 
-  function getFallbackFeedback(accuracy: number) {
-    if (accuracy >= 90) return "Great job! 🎉";
-    if (accuracy >= 70) return "Almost there! Try again 💪";
-    return "Let’s practice more 😊";
-  }
-
   return (
     <ImageBackground
       source={require("../../../assets/general/bg_landscape.webp")}
@@ -314,9 +330,7 @@ export default function StoryScreen() {
               }}
             >
               <View
-                style={{
-                  padding: rf(24),
-                }}
+                style={{ padding: rf(24) }}
                 className="w-1/2 items-center justify-center border-r-2 border-blue-200"
               >
                 <Image
@@ -359,11 +373,7 @@ export default function StoryScreen() {
                       borderRadius: rf(50),
                       borderWidth: 2,
                     }}
-                    className={`${
-                      isRecording
-                        ? "bg-blue-300 border-blue-200"
-                        : "bg-blue-500 border-blue-400"
-                    }`}
+                    className="bg-blue-500 border-blue-400"
                   >
                     <Text
                       style={{ fontSize: rf(typography.button) }}
@@ -416,6 +426,7 @@ export default function StoryScreen() {
           </View>
 
           {/* PRACTICE MODAL */}
+
           <Modal visible={showPracticeModal} transparent animationType="fade">
             <View className="flex-1 bg-black/50 items-center justify-center">
               <View className="bg-white rounded-3xl p-8 items-center w-[40%]">
@@ -434,6 +445,7 @@ export default function StoryScreen() {
           </Modal>
 
           {/* FEEDBACK MODAL */}
+
           <Modal visible={showFeedback} transparent animationType="fade">
             <View className="flex-1 bg-black/50 items-center justify-center">
               <View
@@ -448,13 +460,12 @@ export default function StoryScreen() {
                 className="bg-white"
               >
                 <ScrollView
-                  showsVerticalScrollIndicator={true}
+                  showsVerticalScrollIndicator
                   contentContainerStyle={{
                     alignItems: "center",
                     paddingBottom: rf(10),
                   }}
                 >
-                  {/* TITLE */}
                   <Text
                     style={{
                       fontSize: rfs(typography.header),
@@ -465,7 +476,6 @@ export default function StoryScreen() {
                     Reading Feedback
                   </Text>
 
-                  {/* SCORE */}
                   {readingResult && (
                     <>
                       <Animated.Text
@@ -483,7 +493,6 @@ export default function StoryScreen() {
                           : "⭐".repeat(readingResult.stars)}
                       </Animated.Text>
 
-                      {/* AI FEEDBACK */}
                       <Text
                         style={{
                           fontSize: rfs(typography.body),
@@ -495,11 +504,9 @@ export default function StoryScreen() {
                       >
                         {isGeneratingFeedback
                           ? "Thinking of feedback..."
-                          : aiFeedback ||
-                            getFallbackFeedback(readingResult.stars)}
+                          : aiFeedback}
                       </Text>
 
-                      {/* TRANSCRIPT */}
                       <View
                         style={{
                           padding: rf(16),
@@ -529,7 +536,6 @@ export default function StoryScreen() {
                   )}
                 </ScrollView>
 
-                {/* BUTTONS */}
                 <View
                   style={{
                     flexDirection: "row",

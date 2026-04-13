@@ -10,7 +10,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { collection, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { db } from "../../../firebaseConfig";
 
 import { getLearnerSession } from "../../../lib/sessions/kidSession";
@@ -23,11 +29,78 @@ export default function StoriesScreen() {
   const exercises = Array.from({ length: 20 }, (_, i) => i + 1);
 
   const [progress, setProgress] = useState<Record<number, number>>({});
+  const [totalStars, setTotalStars] = useState(0);
+  const [readingProfile, setReadingProfile] = useState("Spark");
 
-  // Get active learner session
+  // learner session
   const { schoolId, classId, learnerId } = getLearnerSession();
+
+  /*
+  --------------------------------------------------
+  PROFILE META (UI styling per reading profile)
+  --------------------------------------------------
+  */
+
+  const profileMeta: Record<string, any> = {
+    Spark: {
+      label: "Spark Learner",
+      color: "bg-blue-500",
+      border: "border-blue-300",
+    },
+    Ember: {
+      label: "Ember Learner",
+      color: "bg-orange-500",
+      border: "border-orange-300",
+    },
+    Flame: {
+      label: "Flame Learner",
+      color: "bg-red-500",
+      border: "border-red-300",
+    },
+    Blaze: {
+      label: "Blaze Learner",
+      color: "bg-purple-500",
+      border: "border-purple-300",
+    },
+  };
+
+  const profile = profileMeta[readingProfile] ?? profileMeta.Spark;
+
+  /*
+  --------------------------------------------------
+  LOAD LEARNER PROFILE
+  --------------------------------------------------
+  */
+
   useEffect(() => {
-    const unsubscribe = onSnapshot(
+    const learnerRef = doc(
+      db,
+      "schools",
+      schoolId,
+      "classes",
+      classId,
+      "learners",
+      learnerId,
+    );
+
+    const unsubscribe = onSnapshot(learnerRef, (snapshot) => {
+      const data: any = snapshot.data();
+      if (data?.readingProfile) {
+        setReadingProfile(data.readingProfile);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [schoolId, classId, learnerId]);
+
+  /*
+  --------------------------------------------------
+  LOAD READING SESSION PROGRESS
+  --------------------------------------------------
+  */
+
+  useEffect(() => {
+    const sessionsQuery = query(
       collection(
         db,
         "schools",
@@ -38,6 +111,11 @@ export default function StoriesScreen() {
         learnerId,
         "readingSessions",
       ),
+      orderBy("createdAt", "desc"),
+    );
+
+    const unsubscribe = onSnapshot(
+      sessionsQuery,
       (snapshot) => {
         const activityStars: Record<number, number> = {};
 
@@ -53,6 +131,13 @@ export default function StoriesScreen() {
         });
 
         setProgress(activityStars);
+
+        const total = Object.values(activityStars).reduce(
+          (sum, stars) => sum + stars,
+          0,
+        );
+
+        setTotalStars(total);
       },
       (error) => {
         console.error("Error loading reading sessions:", error);
@@ -61,6 +146,12 @@ export default function StoriesScreen() {
 
     return () => unsubscribe();
   }, [schoolId, classId, learnerId]);
+
+  /*
+  --------------------------------------------------
+  NAVIGATION
+  --------------------------------------------------
+  */
 
   const handleReadStory = (exercise: number) => {
     router.push(`/(kid)/(read)/story?level=${level ?? 1}&exercise=${exercise}`);
@@ -74,18 +165,51 @@ export default function StoriesScreen() {
     >
       <View className="flex-1 bg-white/80">
         <SafeAreaView className="flex-1 px-6 py-4">
-          {/* Header */}
-          <View className="mb-6 items-center">
-            <Text className="text-4xl font-sans-bold text-secondary">
-              Spark Learner ✨
-            </Text>
+          {/* HEADER */}
 
-            <Text className="text-gray-600 mt-1">
-              Complete activities to unlock the next one
-            </Text>
+          <View className="mb-6 flex-row items-center justify-between">
+            <View>
+              <Text
+                className="font-sans-bold text-secondary"
+                style={{ fontSize: width * 0.04 }}
+              >
+                {profile.label}
+              </Text>
+
+              <Text
+                className="text-gray-600 font-sans-medium"
+                style={{ fontSize: width * 0.016 }}
+              >
+                Complete activities to unlock the next one.
+              </Text>
+            </View>
+
+            <View
+              className="flex-row items-center px-5 py-2 rounded-2xl"
+              style={{
+                backgroundColor: "#E0F2FE",
+                shadowColor: "#000",
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 2,
+              }}
+            >
+              <Text style={{ fontSize: width * 0.028 }}>⭐</Text>
+
+              <Text
+                className="font-sans-extrabold ml-2"
+                style={{
+                  fontSize: width * 0.03,
+                  color: "#0369A1",
+                }}
+              >
+                {totalStars}
+              </Text>
+            </View>
           </View>
 
-          {/* Activity Grid */}
+          {/* ACTIVITIES GRID */}
+
           <ScrollView showsVerticalScrollIndicator={false}>
             <View className="flex-row flex-wrap justify-center gap-8 mt-2">
               {exercises.map((exercise) => {
@@ -97,14 +221,15 @@ export default function StoriesScreen() {
 
                 return (
                   <View key={exercise} className="items-center">
-                    {/* Activity Card */}
+                    {/* ACTIVITY CARD */}
+
                     <TouchableOpacity
                       activeOpacity={isUnlocked ? 0.85 : 1}
                       disabled={!isUnlocked}
                       onPress={() => handleReadStory(exercise)}
                       className={`rounded-3xl items-center justify-center border-4 shadow-lg ${
                         isUnlocked
-                          ? "bg-blue-500 border-blue-300"
+                          ? `${profile.color} ${profile.border}`
                           : "bg-gray-300 border-gray-200"
                       }`}
                       style={{
@@ -138,7 +263,8 @@ export default function StoriesScreen() {
                       )}
                     </TouchableOpacity>
 
-                    {/* Star Progress */}
+                    {/* STAR PROGRESS */}
+
                     <View
                       className="flex-row mt-2 px-3 py-1 bg-white rounded-full"
                       style={{

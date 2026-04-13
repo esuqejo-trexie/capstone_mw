@@ -1,6 +1,7 @@
 import { wordImages } from "@/lib/assets/wordImages";
 import { speakWord } from "@/lib/azure/tts";
 import { emergingQuestions } from "@/lib/games/firstLetterData";
+import { saveGameSession } from "@/lib/games/saveGameSession";
 import { useRouter } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -34,6 +35,7 @@ export default function FirstLetterGame() {
   const [selected, setSelected] = useState<string | null>(null);
   const [locked, setLocked] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const pulse = useRef(new Animated.Value(1)).current;
 
@@ -81,7 +83,30 @@ export default function FirstLetterGame() {
     setScore(0);
     setSelected(null);
     setLocked(false);
+    setSaved(false);
   }
+
+  /* save game session */
+  async function saveResult() {
+    if (saved) return;
+
+    await saveGameSession({
+      game: "firstLetterQuest",
+      score,
+      maxScore: questions.length,
+      ticketsSpent: 1,
+      completed: finished,
+    });
+
+    setSaved(true);
+  }
+
+  /* AUTO SAVE WHEN GAME FINISHES */
+  useEffect(() => {
+    if (finished) {
+      saveResult();
+    }
+  }, [finished]);
 
   function handleChoice(letter: string) {
     if (locked) return;
@@ -273,7 +298,7 @@ export default function FirstLetterGame() {
             </Text>
 
             <Text className="text-base text-gray-600 text-center mb-8">
-              Changes won't be save
+              Changes won't be saved.
             </Text>
 
             <View className="flex-row gap-6">
@@ -287,7 +312,8 @@ export default function FirstLetterGame() {
               </Pressable>
 
               <Pressable
-                onPress={() => {
+                onPress={async () => {
+                  await saveResult();
                   setShowExitModal(false);
                   router.back();
                 }}
