@@ -27,20 +27,12 @@ export default function ParentGate() {
 
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
-  const [learnerCode, setLearnerCode] = useState<string | null>(null);
-  const [learner, setLearner] = useState<any>(null);
-  const [learnerRef, setLearnerRef] = useState<any>(null);
+  const [learners, setLearners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Lock orientation
   useEffect(() => {
-    const lockOrientation = async () => {
-      await ScreenOrientation.lockAsync(
-        ScreenOrientation.OrientationLock.PORTRAIT,
-      );
-    };
-
-    lockOrientation();
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
 
     return () => {
       ScreenOrientation.unlockAsync();
@@ -54,12 +46,12 @@ export default function ParentGate() {
       return;
     }
 
-    fetchLearner();
+    fetchLearners();
   }, []);
 
-  const fetchLearner = async () => {
+  const fetchLearners = async () => {
     try {
-      const parentEmail = auth.currentUser?.email;
+      const parentEmail = auth.currentUser?.email?.toLowerCase();
       if (!parentEmail) return;
 
       const q = query(
@@ -75,25 +67,23 @@ export default function ParentGate() {
         return;
       }
 
-      const docSnap = snapshot.docs[0];
-      const learnerData = docSnap.data();
+      const learnersList = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
 
-      // Extract IDs from Firestore path
-      const learnerId = docSnap.id;
-      const classId = docSnap.ref.parent.parent?.id;
-      const schoolId = docSnap.ref.parent.parent?.parent?.parent?.id;
+        const learnerId = docSnap.id;
+        const classId = docSnap.ref.parent.parent?.id;
+        const schoolId = docSnap.ref.parent.parent?.parent?.parent?.id;
 
-      const learnerObject = {
-        learnerId,
-        classId,
-        schoolId,
-        ...learnerData,
-      };
+        return {
+          learnerId,
+          classId,
+          schoolId,
+          ref: docSnap.ref,
+          ...data,
+        };
+      });
 
-      setLearner(learnerObject);
-      setLearnerCode(learnerData.learnerCode);
-      setLearnerRef(docSnap.ref);
-
+      setLearners(learnersList);
       setLoading(false);
     } catch (err) {
       console.log(err);
@@ -103,24 +93,26 @@ export default function ParentGate() {
   };
 
   const handleAccess = async () => {
-    if (!learnerCode) return;
+    if (!code.trim()) return;
 
-    if (code.trim().toUpperCase() !== learnerCode) {
+    const normalizedInput = code.trim().toUpperCase();
+
+    // 🔍 Find matching learner
+    const matchedLearner = learners.find(
+      (l) => l.learnerCode?.toUpperCase() === normalizedInput,
+    );
+
+    if (!matchedLearner) {
       setError("Invalid access code");
-      return;
-    }
-
-    if (!learner) {
-      setError("Learner data not loaded.");
       return;
     }
 
     setError("");
 
-    // Update learner status from Invited → Active
-    if (learnerRef && learner?.status === "Invited") {
+    // 🔄 Update status if needed
+    if (matchedLearner.ref && matchedLearner.status === "Invited") {
       try {
-        await updateDoc(learnerRef, {
+        await updateDoc(matchedLearner.ref, {
           status: "Active",
           activatedAt: serverTimestamp(),
         });
@@ -129,24 +121,17 @@ export default function ParentGate() {
       }
     }
 
-    // Save learner session
+    // 💾 Save session
     setLearnerSession({
-      learnerId: learner.learnerId,
-      schoolId: learner.schoolId,
-      classId: learner.classId,
-      name: learner.name,
-      learnerCode: learner.learnerCode,
-      readingProfile: learner.readingProfile,
+      learnerId: matchedLearner.learnerId,
+      schoolId: matchedLearner.schoolId,
+      classId: matchedLearner.classId,
+      name: matchedLearner.name,
+      learnerCode: matchedLearner.learnerCode,
+      readingProfile: matchedLearner.readingProfile,
     });
 
-    console.log("SESSION SET:", {
-      learnerId: learner.learnerId,
-      schoolId: learner.schoolId,
-      classId: learner.classId,
-      name: learner.name,
-      learnerCode: learner.learnerCode,
-      readingProfile: learner.readingProfile,
-    });
+    console.log("SESSION SET:", matchedLearner);
 
     router.replace("/(kid)/home");
   };

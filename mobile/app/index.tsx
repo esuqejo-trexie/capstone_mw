@@ -1,7 +1,10 @@
 import { useRouter } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   Image,
   ImageBackground,
@@ -18,9 +21,13 @@ import {
 
 import {
   createUserWithEmailAndPassword,
+  sendEmailVerification,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+
+import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+
+import { auth, db } from "../firebaseConfig";
 
 export default function Index() {
   const { height, width } = useWindowDimensions();
@@ -36,7 +43,7 @@ export default function Index() {
   }, []);
 
   const [activeForm, setActiveForm] = useState<"none" | "signup" | "signin">(
-    "none"
+    "none",
   );
 
   // Bottom sheet animation
@@ -44,12 +51,15 @@ export default function Index() {
   const panY = useRef(new Animated.Value(0)).current;
 
   // Sign Up states
+  const [isSigningUp, setIsSigningUp] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [termsChecked, setTermsChecked] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
 
   // Sign In states
   const [signInEmail, setSignInEmail] = useState("");
@@ -88,7 +98,8 @@ export default function Index() {
   // Swipe-down gesture
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dy) > 10,
+      onMoveShouldSetPanResponder: (_, gesture) =>
+        !isSigningUp && !isSigningIn && Math.abs(gesture.dy) > 10,
       onPanResponderMove: (_, gesture) => {
         if (gesture.dy > 0) {
           panY.setValue(gesture.dy);
@@ -105,10 +116,12 @@ export default function Index() {
           }).start();
         }
       },
-    })
+    }),
   ).current;
 
   const handleSignUp = async () => {
+    if (isSigningUp || isSigningIn) return;
+
     if (!name || !email || !password || !confirmPassword) {
       alert("Please fill in all fields.");
       return;
@@ -120,28 +133,120 @@ export default function Index() {
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, email.trim(), password);
+      setIsSigningUp(true);
+
+      // 🔹 1. Create Auth user
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password,
+      );
+
+      const user = userCredential.user;
+
+      // 🔹 2. Send email verification
+      await sendEmailVerification(user);
+
+      // 🔹 3. Create Firestore user document
+      await setDoc(doc(db, "users", user.uid), {
+        email: email.trim().toLowerCase(),
+        fullName: name,
+        role: "parent",
+        status: "active",
+        createdAt: serverTimestamp(),
+      });
+
+      alert(
+        "Account created! Please check your email and verify your account before signing in.",
+      );
+
       closeForm();
     } catch (error: any) {
       alert(error.message);
+    } finally {
+      setIsSigningUp(false);
     }
   };
 
   const handleSignIn = async () => {
+    if (isSigningUp || isSigningIn) return;
+
     if (!signInEmail || !signInPassword) {
       alert("Please enter email and password.");
       return;
     }
 
     try {
-      await signInWithEmailAndPassword(
+      setIsSigningIn(true);
+
+      const userCredential = await signInWithEmailAndPassword(
         auth,
         signInEmail.trim(),
-        signInPassword
+        signInPassword,
       );
+
+      const user = userCredential.user;
+
+      // 🔴 Check email verification FIRST
+      if (!user.emailVerified) {
+        Alert.alert(
+          "Email not verified",
+          "Please verify your email before signing in.",
+          [
+            {
+              text: "Resend Email",
+              onPress: async () => {
+                try {
+                  await sendEmailVerification(user);
+                  Alert.alert(
+                    "Verification Sent",
+                    "A new verification email has been sent.",
+                  );
+                } catch (err) {
+                  Alert.alert("Error", "Failed to resend email.");
+                }
+              },
+            },
+            {
+              text: "OK",
+              style: "cancel",
+            },
+          ],
+        );
+
+        await auth.signOut();
+        return;
+      }
+
+      // 🔹 Continue with Firestore validation
+      const userDocRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userDocRef);
+
+      if (!userSnap.exists()) {
+        alert("Account not properly set up. Please sign up again.");
+        await auth.signOut();
+        return;
+      }
+
+      const userData = userSnap.data();
+
+      if (userData.role !== "parent") {
+        alert("This account is not a parent account.");
+        await auth.signOut();
+        return;
+      }
+
+      if (userData.status !== "active") {
+        alert("Your account is not active.");
+        await auth.signOut();
+        return;
+      }
+
       router.replace("/parent_gate");
     } catch (error: any) {
       alert(error.message);
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
@@ -206,6 +311,7 @@ export default function Index() {
                   {/* Close button */}
                   <TouchableOpacity
                     onPress={() => setActiveForm("none")}
+                    disabled={isSigningUp || isSigningIn}
                     className="absolute top-12 right-6 z-10 w-10 h-10 bg-primary rounded-full items-center justify-center shadow-lg shadow-black/10"
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
@@ -223,7 +329,7 @@ export default function Index() {
                       </Text>
                       <Text className="text-gray-500 text-left font-sans-medium">
                         {activeForm === "signup"
-                          ? "Join our community today"
+                          ? "Join, and start your journey today"
                           : "Sign in to continue your journey"}
                       </Text>
                     </View>
@@ -239,7 +345,8 @@ export default function Index() {
                             </Text>
                             <TextInput
                               placeholder="John Doe"
-                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
+                              editable={!isSigningUp && !isSigningIn}
+                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50"
                               value={name}
                               onChangeText={setName}
                               autoCapitalize="words"
@@ -253,7 +360,8 @@ export default function Index() {
                             </Text>
                             <TextInput
                               placeholder="hello@example.com"
-                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
+                              editable={!isSigningUp && !isSigningIn}
+                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50"
                               value={email}
                               onChangeText={setEmail}
                               keyboardType="email-address"
@@ -266,12 +374,23 @@ export default function Index() {
                             <Text className="text-gray-700 text-sm font-medium mb-2">
                               Password
                             </Text>
-                            <TextInput
-                              // secureTextEntry  <-- remove this line
-                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
-                              value={password}
-                              onChangeText={setPassword}
-                            />
+                            <View className="relative">
+                              <TextInput
+                                editable={!isSigningUp && !isSigningIn}
+                                secureTextEntry={!showPassword}
+                                className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 pr-12"
+                                value={password}
+                                onChangeText={setPassword}
+                              />
+                              <TouchableOpacity
+                                onPress={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-4"
+                              >
+                                <Text className="text-gray-500">
+                                  {showPassword ? "Hide" : "Show"}
+                                </Text>
+                              </TouchableOpacity>
+                            </View>
                           </View>
 
                           {/* Confirm Password */}
@@ -279,50 +398,45 @@ export default function Index() {
                             <Text className="text-gray-700 text-sm font-medium mb-2">
                               Confirm Password
                             </Text>
-                            <TextInput
-                              // secureTextEntry  <-- remove this line
-                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
-                              value={confirmPassword}
-                              onChangeText={setConfirmPassword}
-                            />
-                          </View>
-
-                          {/* Terms & Conditions */}
-                          <View className="flex-row items-start mt-2">
-                            <TouchableOpacity
-                              className="mt-1 mr-3"
-                              onPress={() => setTermsChecked(!termsChecked)}
-                            >
-                              <View className="w-5 h-5 border border-gray-300 rounded bg-white flex items-center justify-center">
-                                {termsChecked && (
-                                  <Text className="text-primary text-sm leading-none">
-                                    ✓
-                                  </Text>
-                                )}
-                              </View>
-                            </TouchableOpacity>
-
-                            <Text className="text-gray-600 text-sm flex-1">
-                              I agree to the{" "}
-                              <Text className="text-primary font-medium">
-                                Terms of Service
-                              </Text>{" "}
-                              and{" "}
-                              <Text className="text-primary font-medium">
-                                Privacy Policy
-                              </Text>
-                            </Text>
+                            <View className="relative">
+                              <TextInput
+                                editable={!isSigningUp && !isSigningIn}
+                                secureTextEntry={!showConfirmPassword}
+                                className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 pr-12"
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                              />
+                              <TouchableOpacity
+                                onPress={() =>
+                                  setShowConfirmPassword(!showConfirmPassword)
+                                }
+                                className="absolute right-4 top-4"
+                              >
+                                <Text className="text-gray-500">
+                                  {showConfirmPassword ? "Hide" : "Show"}
+                                </Text>
+                              </TouchableOpacity>
+                            </View>
                           </View>
 
                           {/* Sign Up Button */}
                           <TouchableOpacity
-                            className="bg-primary py-4 rounded-xl mt-2 shadow-lg shadow-primary/30"
+                            className={`py-4 rounded-xl mt-5 shadow-lg ${
+                              isSigningUp
+                                ? "bg-gray-400"
+                                : "bg-primary shadow-primary/30"
+                            }`}
                             onPress={handleSignUp}
                             activeOpacity={0.9}
+                            disabled={isSigningUp || isSigningIn}
                           >
-                            <Text className="text-white text-center font-sans-bold text-lg ">
-                              Create Account
-                            </Text>
+                            {isSigningUp ? (
+                              <ActivityIndicator color="#fff" />
+                            ) : (
+                              <Text className="text-white text-center font-sans-bold text-lg">
+                                Create Account
+                              </Text>
+                            )}
                           </TouchableOpacity>
                         </View>
 
@@ -334,6 +448,7 @@ export default function Index() {
                           <TouchableOpacity
                             onPress={() => switchForm("signin")}
                             className="mt-2"
+                            disabled={isSigningUp || isSigningIn}
                           >
                             <Text className="text-primary text-center font-sans-bold text-base">
                               Sign In Now
@@ -354,7 +469,8 @@ export default function Index() {
                             </Text>
                             <TextInput
                               placeholder="hello@example.com"
-                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
+                              editable={!isSigningUp && !isSigningIn}
+                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50"
                               value={signInEmail}
                               onChangeText={setSignInEmail}
                               keyboardType="email-address"
@@ -367,66 +483,46 @@ export default function Index() {
                             <Text className="text-gray-700 text-sm font-medium mb-2">
                               Password
                             </Text>
-                            <TextInput
-                              // secureTextEntry  <-- remove this line
-                              className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 focus:border-primary focus:bg-white"
-                              value={signInPassword}
-                              onChangeText={setSignInPassword}
-                            />
-                          </View>
-
-                          {/* Remember Me */}
-                          <View className="flex-row items-center mt-2">
-                            <TouchableOpacity
-                              className="mr-3"
-                              onPress={() => setRememberMe(!rememberMe)}
-                            >
-                              <View className="w-5 h-5 border border-gray-300 rounded bg-white flex items-center justify-center">
-                                {rememberMe && (
-                                  <Text className="text-primary text-sm leading-none">
-                                    ✓
-                                  </Text>
-                                )}
-                              </View>
-                            </TouchableOpacity>
-
-                            <Text className="text-gray-600 text-sm">
-                              Remember me
-                            </Text>
+                            <View className="relative">
+                              <TextInput
+                                editable={!isSigningUp && !isSigningIn}
+                                secureTextEntry={!showSignInPassword}
+                                className="border border-gray-200 rounded-xl px-5 py-4 bg-gray-50 pr-12"
+                                value={signInPassword}
+                                onChangeText={setSignInPassword}
+                              />
+                              <TouchableOpacity
+                                onPress={() =>
+                                  setShowSignInPassword(!showSignInPassword)
+                                }
+                                className="absolute right-4 top-4"
+                              >
+                                <Text className="text-gray-500">
+                                  {showSignInPassword ? "Hide" : "Show"}
+                                </Text>
+                              </TouchableOpacity>
+                            </View>
                           </View>
 
                           {/* Sign In Button */}
                           <TouchableOpacity
-                            className="bg-primary py-4 rounded-xl mt-2 shadow-lg shadow-primary/30"
+                            className={`py-4 rounded-xl mt-2 shadow-lg ${
+                              isSigningIn
+                                ? "bg-gray-400"
+                                : "bg-primary shadow-primary/30"
+                            }`}
                             onPress={handleSignIn}
                             activeOpacity={0.9}
+                            disabled={isSigningUp || isSigningIn}
                           >
-                            <Text className="text-white text-center font-sans-bold text-lg">
-                              Sign In
-                            </Text>
+                            {isSigningIn ? (
+                              <ActivityIndicator color="#fff" />
+                            ) : (
+                              <Text className="text-white text-center font-sans-bold text-lg">
+                                Sign In
+                              </Text>
+                            )}
                           </TouchableOpacity>
-
-                          {/* Divider */}
-                          <View className="flex-row items-center my-6">
-                            <View className="flex-1 h-px bg-gray-200" />
-                            <Text className="mx-4 text-gray-400 text-sm">
-                              or continue with
-                            </Text>
-                            <View className="flex-1 h-px bg-gray-200" />
-                          </View>
-
-                          {/* Social Login */}
-                          <View className="flex-row justify-center space-x-4">
-                            <TouchableOpacity className="w-14 h-14 border border-gray-200 rounded-xl items-center justify-center">
-                              <Text className="text-2xl">G</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity className="w-14 h-14 border border-gray-200 rounded-xl items-center justify-center">
-                              <Text className="text-2xl">f</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity className="w-14 h-14 border border-gray-200 rounded-xl items-center justify-center">
-                              <Text className="text-2xl">in</Text>
-                            </TouchableOpacity>
-                          </View>
                         </View>
 
                         {/* Switch to Sign Up */}
@@ -437,6 +533,7 @@ export default function Index() {
                           <TouchableOpacity
                             onPress={() => switchForm("signup")}
                             className="mt-2"
+                            disabled={isSigningUp || isSigningIn}
                           >
                             <Text className="text-primary text-center font-sans-bold text-base">
                               Sign Up Now
@@ -445,13 +542,6 @@ export default function Index() {
                         </View>
                       </>
                     )}
-                  </View>
-
-                  {/* Footer */}
-                  <View className="mt-8">
-                    <Text className="text-gray-400 text-center text-sm">
-                      By continuing, you agree to our Terms and Privacy Policy
-                    </Text>
                   </View>
                 </ScrollView>
               </KeyboardAvoidingView>
