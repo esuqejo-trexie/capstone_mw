@@ -192,6 +192,7 @@ export default function GamesScreen() {
   const [tickets, setTickets] = useState(0);
   const [selectedGame, setSelectedGame] = useState<GameType | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
   const screenWidth = Math.max(width, height);
   const screenHeight = Math.min(width, height);
@@ -263,7 +264,9 @@ export default function GamesScreen() {
   };
 
   const startGame = async () => {
-    if (!selectedGame) return;
+    if (!selectedGame || isStarting) return; // 🚫 prevent duplicate
+
+    setIsStarting(true);
 
     try {
       const spendTicket = httpsCallable(functions, "spendTicket");
@@ -276,10 +279,11 @@ export default function GamesScreen() {
       });
 
       setShowModal(false);
-
       router.push(selectedGame.route as any);
     } catch (error) {
       console.log("Ticket spending failed:", error);
+    } finally {
+      setIsStarting(false); // ✅ always reset
     }
   };
 
@@ -429,16 +433,23 @@ export default function GamesScreen() {
                       </Pressable>
 
                       <Pressable
-                        disabled={tickets < selectedGame.ticketCost}
+                        disabled={
+                          tickets < selectedGame.ticketCost || isStarting
+                        }
                         onPress={startGame}
                         className="bg-secondary rounded-2xl items-center justify-center"
                         style={{
                           paddingVertical: 12 * scale,
                           paddingHorizontal: 28 * scale,
-                          opacity: tickets < selectedGame.ticketCost ? 0.5 : 1,
+                          opacity:
+                            tickets < selectedGame.ticketCost || isStarting
+                              ? 0.5
+                              : 1,
                         }}
                       >
-                        <Text className="text-white font-sans-bold">Play</Text>
+                        <Text className="text-white font-sans-bold">
+                          {isStarting ? "Starting..." : "Play"}
+                        </Text>
                       </Pressable>
                     </View>
                   </>

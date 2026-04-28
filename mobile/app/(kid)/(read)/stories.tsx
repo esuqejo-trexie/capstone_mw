@@ -31,6 +31,7 @@ export default function StoriesScreen() {
   const [progress, setProgress] = useState<Record<number, number>>({});
   const [totalStars, setTotalStars] = useState(0);
   const [readingProfile, setReadingProfile] = useState("Spark");
+  const [parentEmail, setParentEmail] = useState<string | null>(null);
 
   // learner session
   const { schoolId, classId, learnerId } = getLearnerSession();
@@ -57,11 +58,6 @@ export default function StoriesScreen() {
       color: "bg-red-500",
       border: "border-red-300",
     },
-    Blaze: {
-      label: "Blaze Learner",
-      color: "bg-purple-500",
-      border: "border-purple-300",
-    },
   };
 
   const profile = profileMeta[readingProfile] ?? profileMeta.Spark;
@@ -85,8 +81,19 @@ export default function StoriesScreen() {
 
     const unsubscribe = onSnapshot(learnerRef, (snapshot) => {
       const data: any = snapshot.data();
+      if (data?.parentEmail) {
+        setParentEmail(data.parentEmail);
+      }
       if (data?.readingProfile) {
-        setReadingProfile(data.readingProfile);
+        const map: Record<string, string> = {
+          Emerging: "Spark",
+          Developing: "Ember",
+          Transitioning: "Flame",
+        };
+
+        const mappedProfile = map[data.readingProfile] ?? "Spark";
+
+        setReadingProfile(mappedProfile);
       }
     });
 
@@ -215,7 +222,11 @@ export default function StoriesScreen() {
               {exercises.map((exercise) => {
                 const previousStars = progress[exercise - 1] ?? 0;
 
-                const isUnlocked = exercise === 1 || previousStars > 0;
+                const isDemoAccount =
+                  parentEmail === "esquejotreixee@gmail.com";
+
+                const isUnlocked =
+                  isDemoAccount || exercise === 1 || previousStars > 0;
 
                 const stars = progress[exercise] ?? 0;
 

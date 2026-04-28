@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../../firebaseConfig";
+import { getWordData } from "../../../lib/ipa";
 
 import { submitReadingResult } from "../../../lib/reading/submitReadingResult";
 import { getLearnerSession } from "../../../lib/sessions/kidSession";
@@ -25,15 +26,17 @@ import { speakText } from "../../../lib/azure/tts";
 import { generateAIFeedback } from "../../../lib/reading/feedbackGenerator";
 import { typography } from "../../../lib/ui/typography";
 
+import { developingContent } from "../../../lib/reading/developingContent";
 import { emergingContent } from "../../../lib/reading/emergingContent";
 
+import { computeDevelopingFinalScore } from "./activities/developingActivity";
 import {
   computeEmergingFinalScore,
-  computePronunciation,
   computeStars,
   getEmergingStep,
   getPracticeMessage,
   isWordCorrect,
+  resetEmergingProgress,
 } from "./activities/emergingActivity";
 
 type WordResult = {
@@ -41,6 +44,17 @@ type WordResult = {
   accuracy?: number;
   errorType?: string;
 };
+
+function shuffleOptions<T>(array: T[]): T[] {
+  const shuffled = [...array];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled;
+}
 
 export default function StoryScreen() {
   const { level, exercise: exerciseParam } = useLocalSearchParams<{
@@ -74,7 +88,23 @@ export default function StoryScreen() {
   const [practiceMessage, setPracticeMessage] = useState("");
   const [showPracticeModal, setShowPracticeModal] = useState(false);
 
+  const [showMCQ, setShowMCQ] = useState(false);
+  const [pendingMCQ, setPendingMCQ] = useState(false);
+  const [showFinalFeedback, setShowFinalFeedback] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<{
+    text: string;
+    score: 0 | 1 | 2;
+  } | null>(null);
+  const [comprehensionCorrect, setComprehensionCorrect] = useState<
+    boolean | null
+  >(null);
+
+  const [shuffledOptions, setShuffledOptions] = useState<
+    { text: string; score: 0 | 1 | 2 }[]
+  >([]);
+
   const [isRecording, setIsRecording] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [transcript, setTranscript] = useState<string | null>(null);
 
   const [readingResult, setReadingResult] = useState<{
@@ -90,6 +120,8 @@ export default function StoryScreen() {
   const [showFeedback, setShowFeedback] = useState(false);
 
   const starScale = useRef(new Animated.Value(0)).current;
+  const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const maxDurationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* LOAD LEARNER PROFILE */
 
@@ -107,7 +139,15 @@ export default function StoryScreen() {
     const unsubscribe = onSnapshot(learnerRef, (snapshot) => {
       const data: any = snapshot.data();
       if (data?.readingProfile) {
-        setReadingProfile(data.readingProfile);
+        const map: Record<string, string> = {
+          Emerging: "Spark",
+          Developing: "Ember",
+          Transitioning: "Flame",
+        };
+
+        const mappedProfile = map[data.readingProfile] ?? "Spark";
+
+        setReadingProfile(mappedProfile);
       }
     });
 
@@ -129,29 +169,80 @@ export default function StoryScreen() {
     }
   }, [showFeedback]);
 
-  const activity = emergingContent[exerciseIndex];
+  const isDevelopingProfile = readingProfile === "Ember";
+
+  const content = isDevelopingProfile ? developingContent : emergingContent;
+
+  const activity = content[exerciseIndex];
   const sentence = activity.text;
 
-  const { words, isPhraseStep, displayText } = getEmergingStep(
-    sentence,
-    practiceStep,
-  );
+  const wordCount = sentence.split(" ").length;
+
+  // base size
+  let storySize = rf(typography.story);
+
+  // scale down based on length
+  if (wordCount > 6) storySize = rf(typography.story * 0.9);
+  if (wordCount > 10) storySize = rf(typography.story * 0.8);
+  if (wordCount > 14) storySize = rf(typography.story * 0.7);
+
+  let words: string[] = [];
+  let isPhraseStep = true;
+  let displayText = sentence;
+
+  if (!isDevelopingProfile) {
+    const stepData = getEmergingStep(sentence, practiceStep);
+    words = stepData.words;
+    isPhraseStep = stepData.isPhraseStep;
+    displayText = stepData.displayText;
+  }
+
+  const resetSilenceTimer = () => {
+    if (silenceTimer.current) {
+      clearTimeout(silenceTimer.current);
+    }
+
+    silenceTimer.current = setTimeout(() => {
+      console.log("Auto-stop: silence detected");
+      handleStop();
+    }, 3000);
+  };
 
   const handleStart = async () => {
     setTranscript(null);
     setReadingResult(null);
     setAiFeedback("");
     setIsRecording(true);
+
     await startRecording();
+
+    maxDurationTimer.current = setTimeout(() => {
+      console.log("Auto-stop: max duration reached");
+      handleStop();
+    }, 10000);
+
+    resetSilenceTimer();
+
+    const interval = setInterval(() => {
+      if (!isRecording) {
+        clearInterval(interval);
+        return;
+      }
+      resetSilenceTimer();
+    }, 1000);
   };
 
   const handleStop = async () => {
+    if (silenceTimer.current) clearTimeout(silenceTimer.current);
+    if (maxDurationTimer.current) clearTimeout(maxDurationTimer.current);
+
     setIsRecording(false);
 
     const audioUri = await stopRecording();
     if (!audioUri) return;
 
-    if (!isPhraseStep) {
+    // 🔹 Emerging word practice
+    if (!isDevelopingProfile && !isPhraseStep) {
       try {
         const json: any = await assessPronunciation(audioUri, displayText);
 
@@ -193,6 +284,7 @@ export default function StoryScreen() {
       return;
     }
 
+    // 🔹 Final reading assessment
     try {
       const json: any = await assessPronunciation(audioUri, sentence);
 
@@ -230,12 +322,15 @@ export default function StoryScreen() {
         .filter((w) => w.errorType === "Mispronunciation")
         .map((w) => w.word);
 
-      const pronunciation = computePronunciation(
-        accuracyScore,
-        completenessScore,
-      );
+      // ✅ FIXED SCORING
+      const finalScore = isDevelopingProfile
+        ? computeDevelopingFinalScore(
+            accuracyScore,
+            completenessScore,
+            fluencyScore,
+          )
+        : computeEmergingFinalScore(accuracyScore, completenessScore);
 
-      const finalScore = computeEmergingFinalScore(pronunciation);
       const stars = computeStars(finalScore);
 
       const score = {
@@ -258,7 +353,7 @@ export default function StoryScreen() {
         completenessScore,
         fluencyScore,
         pronScore,
-        pronunciationScore: pronunciation,
+        pronunciationScore: finalScore,
         stars,
       });
 
@@ -277,6 +372,12 @@ export default function StoryScreen() {
 
       setAiFeedback(feedback);
       setIsGeneratingFeedback(false);
+
+      if (activity.question && activity.options) {
+        setShuffledOptions(shuffleOptions(activity.options));
+        setPendingMCQ(true); // delay MCQ
+      }
+
       setShowFeedback(true);
     } catch (error) {
       console.error("Reading error:", error);
@@ -285,6 +386,19 @@ export default function StoryScreen() {
       setAiFeedback("Let’s try again together!");
       setIsGeneratingFeedback(false);
       setShowFeedback(true);
+    }
+  };
+
+  const handleListen = async () => {
+    if (isRecording || isPlaying) return;
+
+    try {
+      setIsPlaying(true);
+      await speakText(displayText);
+    } catch (e) {
+      console.log("TTS error:", e);
+    } finally {
+      setIsPlaying(false);
     }
   };
 
@@ -348,16 +462,97 @@ export default function StoryScreen() {
                 style={{ padding: rf(24) }}
                 className="w-1/2 justify-between"
               >
-                <View className="flex-1 justify-center">
-                  <Text
-                    style={{
-                      fontSize: rf(typography.story),
-                      lineHeight: rf(typography.story + 6),
-                    }}
-                    className="text-center font-sans-extrabold text-gray-800"
-                  >
-                    {displayText}
-                  </Text>
+                <View className="flex-1 justify-center items-center">
+                  {isDevelopingProfile ? (
+                    // ✅ DEVELOPING → FULL SENTENCE
+                    <View className="flex-row flex-wrap justify-center max-w-[90%]">
+                      {sentence.split(" ").map((word, index) => {
+                        const cleanWord = word.replace(/[.,!?]/g, ""); // remove punctuation
+                        const data = getWordData(cleanWord);
+
+                        return (
+                          <View key={index} className="items-center mx-2">
+                            <Text
+                              style={{
+                                fontSize: storySize,
+                                lineHeight: storySize + rf(6),
+                              }}
+                              className="font-sans-extrabold text-gray-800"
+                            >
+                              {word}
+                            </Text>
+
+                            {data?.ipa && (
+                              <Text
+                                style={{ fontSize: rf(typography.caption) }}
+                                className="text-gray-500"
+                              >
+                                {data.ipa}
+                              </Text>
+                            )}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  ) : !isPhraseStep ? (
+                    // ✅ EMERGING → WORD PRACTICE
+                    (() => {
+                      const data = getWordData(displayText);
+
+                      return (
+                        <View className="items-center">
+                          <Text
+                            style={{
+                              fontSize: rf(typography.story),
+                              lineHeight: rf(typography.story + 6),
+                            }}
+                            className="text-center font-sans-extrabold text-gray-800"
+                          >
+                            {displayText}
+                          </Text>
+
+                          {data?.ipa && (
+                            <Text
+                              style={{ fontSize: rf(typography.caption) }}
+                              className="text-gray-500 mt-1"
+                            >
+                              {data.ipa}
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    })()
+                  ) : (
+                    // ✅ EMERGING → PHRASE STEP
+                    <View className="flex-row flex-wrap justify-center">
+                      {words.map((word, index) => {
+                        const data = getWordData(word);
+
+                        return (
+                          <View key={index} className="items-center mx-2">
+                            <Text
+                              style={{
+                                fontSize: rf(typography.story),
+                                lineHeight: rf(typography.story + 6),
+                              }}
+                              className="font-sans-extrabold text-gray-800"
+                            >
+                              {word}
+                            </Text>
+
+                            {data?.ipa && (
+                              <Text
+                                style={{ fontSize: rf(typography.caption) }}
+                                className="text-gray-500"
+                              >
+                                {data.ipa}
+                              </Text>
+                            )}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
                 </View>
 
                 <View
@@ -365,13 +560,14 @@ export default function StoryScreen() {
                   className="flex-row justify-center"
                 >
                   <TouchableOpacity
-                    onPress={() => speakText(displayText)}
-                    disabled={isRecording}
+                    onPress={handleListen}
+                    disabled={isRecording || isPlaying}
                     style={{
                       paddingVertical: rf(14),
                       paddingHorizontal: rf(28),
                       borderRadius: rf(50),
                       borderWidth: 2,
+                      opacity: isRecording || isPlaying ? 0.6 : 1,
                     }}
                     className="bg-blue-500 border-blue-400"
                   >
@@ -379,7 +575,7 @@ export default function StoryScreen() {
                       style={{ fontSize: rf(typography.button) }}
                       className="text-white font-sans-extrabold"
                     >
-                      Listen
+                      {isPlaying ? "Playing..." : "Listen"}
                     </Text>
                   </TouchableOpacity>
 
@@ -546,6 +742,11 @@ export default function StoryScreen() {
                 >
                   <TouchableOpacity
                     onPress={() => {
+                      const reset = resetEmergingProgress();
+
+                      setPracticeStep(reset.practiceStep);
+                      setPracticeAttempts(reset.practiceAttempts);
+
                       setShowFeedback(false);
                       handleReset();
                     }}
@@ -567,7 +768,13 @@ export default function StoryScreen() {
                   <TouchableOpacity
                     onPress={() => {
                       setShowFeedback(false);
-                      router.back();
+
+                      if (pendingMCQ) {
+                        setPendingMCQ(false);
+                        setShowMCQ(true); // show MCQ AFTER feedback
+                      } else {
+                        router.back();
+                      }
                     }}
                     style={{
                       paddingHorizontal: rf(26),
@@ -584,6 +791,99 @@ export default function StoryScreen() {
                     </Text>
                   </TouchableOpacity>
                 </View>
+              </View>
+            </View>
+          </Modal>
+
+          <Modal visible={showMCQ} transparent animationType="fade">
+            <View className="flex-1 bg-black/50 items-center justify-center">
+              <View className="bg-white rounded-3xl p-8 w-[50%] items-center">
+                <Text className="text-2xl font-sans-bold text-secondary mb-6 text-center">
+                  {activity.question}
+                </Text>
+
+                {shuffledOptions.map((opt, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => setSelectedAnswer(opt)}
+                    className={`w-full py-3 px-6 rounded-xl mb-3 ${
+                      selectedAnswer === opt ? "bg-blue-400" : "bg-gray-200"
+                    }`}
+                  >
+                    <Text className="text-center font-sans-bold text-gray-800">
+                      {opt.text}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+
+                {selectedAnswer && (
+                  <Text className="mt-4 text-lg font-sans-bold">
+                    {selectedAnswer.score === 2
+                      ? "Great job! You understood it well 👍"
+                      : selectedAnswer.score === 1
+                        ? "Almost there! Keep practicing 😊"
+                        : "Let's try again next time 💪"}
+                  </Text>
+                )}
+
+                <TouchableOpacity
+                  onPress={() => {
+                    if (!selectedAnswer) return;
+
+                    const isCorrect =
+                      selectedAnswer.text === activity.correctAnswer;
+
+                    const pcmScore = selectedAnswer.score; // 0 | 1 | 2
+
+                    setComprehensionCorrect(isCorrect);
+
+                    console.log("PCM Score:", pcmScore);
+
+                    setTimeout(() => {
+                      setShowMCQ(false);
+
+                      // keep selectedAnswer for final display
+                      setComprehensionCorrect(null);
+                      setShuffledOptions([]);
+
+                      setShowFinalFeedback(true); // 👈 NEW FINAL STEP
+                    }, 1200);
+                  }}
+                  className="bg-green-500 px-8 py-3 rounded-full mt-6"
+                >
+                  <Text className="text-white font-sans-bold">Submit</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          <Modal visible={showFinalFeedback} transparent animationType="fade">
+            <View className="flex-1 bg-black/50 items-center justify-center">
+              <View className="bg-white rounded-3xl p-8 items-center w-[50%]">
+                <Text className="text-2xl font-sans-bold text-secondary mb-4">
+                  Final Result
+                </Text>
+
+                <Text className="text-lg mb-2">
+                  ⭐ Reading Stars: {readingResult?.stars ?? 0}
+                </Text>
+
+                <Text className="text-lg mb-4">
+                  🧠 Comprehension Score: {selectedAnswer?.score ?? 0} / 2
+                </Text>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowFinalFeedback(false);
+
+                    setSelectedAnswer(null);
+
+                    router.back();
+                  }}
+                  className="bg-green-500 px-8 py-3 rounded-full"
+                >
+                  <Text className="text-white font-sans-bold">Continue</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </Modal>

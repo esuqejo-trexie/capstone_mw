@@ -3,15 +3,25 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-jsx",
+
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+
+    "moduleResolution": "node16",
+    "module": "Node16",
+
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "lib": ["ES2021", "DOM"]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "nativewind-env.d.ts"
+    "nativewind-env.d.ts",
+    "scripts/**/*.ts"
   ]
 }

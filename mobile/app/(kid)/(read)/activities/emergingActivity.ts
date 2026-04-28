@@ -6,6 +6,13 @@ export type WordResult = {
 
 export const MAX_ATTEMPTS = 3;
 
+export function resetEmergingProgress() {
+  return {
+    practiceStep: 0,
+    practiceAttempts: 0,
+  };
+}
+
 /**
  * Splits a phrase into words and determines
  * if the user is in the phrase reading step.
@@ -13,8 +20,7 @@ export const MAX_ATTEMPTS = 3;
 export function getEmergingStep(sentence: string, practiceStep: number) {
   const words = sentence.split(" ");
 
-  const isPhraseStep = practiceStep === words.length;
-
+  const isPhraseStep = practiceStep >= words.length;
   const displayText = isPhraseStep ? sentence : words[practiceStep];
 
   return {
@@ -29,7 +35,13 @@ export function getEmergingStep(sentence: string, practiceStep: number) {
  * Uses Azure pronunciation accuracy.
  */
 export function isWordCorrect(wordResults: WordResult[]) {
-  return wordResults.every((w) => (w.accuracy ?? 0) >= 70);
+  if (!wordResults.length) return false;
+
+  const avg =
+    wordResults.reduce((sum, w) => sum + (w.accuracy ?? 0), 0) /
+    wordResults.length;
+
+  return avg >= 70;
 }
 
 /**
@@ -55,7 +67,7 @@ export function getPracticeMessage(
 
   if (newAttempts >= MAX_ATTEMPTS) {
     return {
-      message: "Good try! Let's continue practicing.",
+      message: "Nice try! Let's move to the next word 😊",
       nextAttempts: 0,
       proceed: true,
     };
@@ -68,32 +80,56 @@ export function getPracticeMessage(
   };
 }
 
+/* =========================================================
+   READING SCORING (ARAL + AZURE ALIGNED)
+========================================================= */
+
 /**
- * Computes Pronunciation score.
- * SmartRead formula:
- * Pronunciation = 0.7 Accuracy + 0.3 Completeness
+ * Emerging Final Score
+ * Focus: decoding (accuracy + completeness)
  */
-export function computePronunciation(
+export function computeEmergingFinalScore(
   accuracy: number,
   completeness: number,
 ): number {
-  return Math.round(accuracy * 0.7 + completeness * 0.3);
+  return Math.round(accuracy * 0.8 + completeness * 0.2);
 }
 
 /**
- * Emerging learners use pronunciation only
- * for their final score.
- */
-export function computeEmergingFinalScore(pronunciation: number): number {
-  return pronunciation;
-}
-
-/**
- * Converts score into stars.
+ * Converts reading score into stars (DepEd-based)
  */
 export function computeStars(score: number): number {
-  if (score >= 90) return 3;
-  if (score >= 80) return 2;
-  if (score >= 70) return 1;
-  return 0;
+  if (score >= 85) return 3; // Very Satisfactory / Outstanding
+  if (score >= 80) return 2; // Satisfactory
+  if (score >= 75) return 1; // Fairly Satisfactory
+  return 0; // Did Not Meet Expectations
+}
+
+/* =========================================================
+   COMPREHENSION SCORING (PCM-BASED)
+========================================================= */
+
+/**
+ * Computes comprehension result for a single question
+ * (Emerging: 1 question, max = 2)
+ */
+export function computeComprehensionScore(selectedScore: 0 | 1 | 2) {
+  return {
+    score: selectedScore,
+    maxScore: 2,
+  };
+}
+
+/**
+ * (Future-proof) Computes total comprehension
+ * for multiple questions
+ */
+export function computeTotalComprehension(scores: (0 | 1 | 2)[]) {
+  const total = scores.reduce<number>((sum, s) => sum + s, 0);
+  const max = scores.length * 2;
+
+  return {
+    score: total,
+    maxScore: max,
+  };
 }

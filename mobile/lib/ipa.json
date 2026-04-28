@@ -1,0 +1,982 @@
+{
+  "a": {
+    "ipa": "/ˈā/",
+    "def1": "the first letter of the English alphabet",
+    "def2": "a grade that shows a student's work is excellent"
+  },
+  "accidentally": {
+    "ipa": "/ˌak-sə-ˈden-tᵊl/",
+    "def1": "happening by chance or unexpectedly",
+    "def2": "not happening or done on purpose"
+  },
+  "alex": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "along": {
+    "ipa": "/ə-ˈlȯŋ/",
+    "def1": "on or near in a lengthwise direction",
+    "def2": "at a point on"
+  },
+  "ana": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "and": {
+    "ipa": "/ənd/",
+    "def1": "added to",
+    "def2": "as well as"
+  },
+  "annoyed": {
+    "ipa": "/ə-ˈnȯi/",
+    "def1": "to cause to feel slightly angry or irritated",
+    "def2": ""
+  },
+  "ant": {
+    "ipa": "/ˈant/",
+    "def1": "a small insect related to the bees and wasps that lives in colonies and forms nests in the ground or in wood in which it stores food and raises its young",
+    "def2": ""
+  },
+  "are": {
+    "ipa": "/ˈär/",
+    "def1": "",
+    "def2": ""
+  },
+  "away": {
+    "ipa": "/ə-ˈwā/",
+    "def1": "from this or that place",
+    "def2": "in another place or direction"
+  },
+  "back": {
+    "ipa": "/ˈbak/",
+    "def1": "the rear part of the human body from the neck to the end of the spine : the upper part of the body of an animal",
+    "def2": "the part of something that is opposite or away from the front part"
+  },
+  "bad": {
+    "ipa": "/ˈbad/",
+    "def1": "not good : poor",
+    "def2": "not favorable"
+  },
+  "bag": {
+    "ipa": "/ˈbag/",
+    "def1": "a container made of flexible material (as paper or plastic)",
+    "def2": "purse, handbag"
+  },
+  "ball": {
+    "ipa": "/ˈbȯl/",
+    "def1": "something round or roundish",
+    "def2": "a round or roundish object used in a game or sport"
+  },
+  "be": {
+    "ipa": "/bē/",
+    "def1": "to equal in meaning or identity",
+    "def2": "to have a specified character, quality, or condition"
+  },
+  "beach": {
+    "ipa": "/ˈbēch/",
+    "def1": "a sandy or gravelly part of the shore of an ocean or a lake",
+    "def2": ""
+  },
+  "bed": {
+    "ipa": "/ˈbed/",
+    "def1": "a piece of furniture on which a person sleeps or rests",
+    "def2": "a place for sleeping or resting"
+  },
+  "big": {
+    "ipa": "/ˈbig/",
+    "def1": "large in size",
+    "def2": "large in number or amount"
+  },
+  "birds": {
+    "ipa": "/ˈbərd/",
+    "def1": "an animal that lays eggs and has wings and a body covered with feathers",
+    "def2": ""
+  },
+  "black": {
+    "ipa": "/ˈblak/",
+    "def1": "of the color of coal : colored black",
+    "def2": "very dark"
+  },
+  "bob": {
+    "ipa": "/ˈbäb/",
+    "def1": "to move or cause to move with a short jerky up-and-down motion",
+    "def2": "to try to seize something with the teeth"
+  },
+  "boy": {
+    "ipa": "/ˈbȯi/",
+    "def1": "a male child from birth to young manhood",
+    "def2": "son"
+  },
+  "boys": {
+    "ipa": "/ˈbȯi/",
+    "def1": "a male child from birth to young manhood",
+    "def2": "son"
+  },
+  "bug": {
+    "ipa": "/ˈbəg/",
+    "def1": "any of a large group of insects that have four wings, suck liquid food (as plant juices or blood), and have young which resemble the adults but lack wings",
+    "def2": "an insect or other small creeping or crawling animal"
+  },
+  "build": {
+    "ipa": "/ˈbild/",
+    "def1": "to make by putting together parts or materials",
+    "def2": "to produce or create gradually by effort"
+  },
+  "but": {
+    "ipa": "/bət/",
+    "def1": "yet nevertheless",
+    "def2": "while just the opposite"
+  },
+  "can": {
+    "ipa": "/kən/",
+    "def1": "know how to",
+    "def2": "be able to"
+  },
+  "cap": {
+    "ipa": "/ˈkap/",
+    "def1": "a head covering and especially one having a visor and no brim",
+    "def2": "something that serves as a cover or protection for something"
+  },
+  "car": {
+    "ipa": "/ˈkär/",
+    "def1": "a vehicle that moves on wheels",
+    "def2": "a separate section of a train"
+  },
+  "carried": {
+    "ipa": "/ˈker-ē/",
+    "def1": "to take or transfer from one place to another",
+    "def2": "to contain and direct the course of"
+  },
+  "carrot": {
+    "ipa": "/ˈker-ət/",
+    "def1": "a long orange root of a garden plant that is eaten as a vegetable",
+    "def2": ""
+  },
+  "carrying": {
+    "ipa": "/ˈker-ē/",
+    "def1": "to take or transfer from one place to another",
+    "def2": "to contain and direct the course of"
+  },
+  "cat": {
+    "ipa": "/ˈkat/",
+    "def1": "a common furry meat-eating animal kept as a pet or for catching mice and rats",
+    "def2": "any of a family of mammals (as the lion, tiger, and leopard) to which the domestic cat belongs"
+  },
+  "chain": {
+    "ipa": "/ˈchān/",
+    "def1": "a series of connected links or rings usually of metal",
+    "def2": "a series of things joined together as if by links"
+  },
+  "clay": {
+    "ipa": "/ˈklā/",
+    "def1": "an earthy material that is sticky and easily molded when wet and hard when baked",
+    "def2": "a substance like clay that is used for modeling"
+  },
+  "clean": {
+    "ipa": "/ˈklēn/",
+    "def1": "free of dirt or pollution",
+    "def2": "not yet used"
+  },
+  "cold": {
+    "ipa": "/ˈkōld/",
+    "def1": "having a low temperature or one much below normal",
+    "def2": "suffering from lack of warmth"
+  },
+  "cooks": {
+    "ipa": "/ˈku̇k/",
+    "def1": "a person who prepares food for eating",
+    "def2": ""
+  },
+  "cool": {
+    "ipa": "/ˈkül/",
+    "def1": "somewhat cold : not warm",
+    "def2": "not letting or keeping in heat"
+  },
+  "cop": {
+    "ipa": "/ˈkäp/",
+    "def1": "police officer",
+    "def2": ""
+  },
+  "corn": {
+    "ipa": "/ˈkȯrn/",
+    "def1": "a tall American cereal grass plant widely grown for its large ears of starchy grain which come in many varieties",
+    "def2": "the seeds of a corn plant that are used especially as food for humans and animals and are typically yellow or whitish"
+  },
+  "cow": {
+    "ipa": "/ˈkau̇/",
+    "def1": "the adult female of cattle or of any of various other large animals (as moose or seals)",
+    "def2": ""
+  },
+  "coy": {
+    "ipa": "/ˈkȯi/",
+    "def1": "falsely shy or modest",
+    "def2": ""
+  },
+  "crossing": {
+    "ipa": "/ˈkrȯ-siŋ/",
+    "def1": "a point where a line, track, or street intersects another line, track, or street",
+    "def2": "a place provided for going across a street, railroad tracks, or a stream"
+  },
+  "crow": {
+    "ipa": "/ˈkrō/",
+    "def1": "a glossy black bird that has a harsh cry",
+    "def2": "a member of a tribe of Indigenous people of Montana"
+  },
+  "cup": {
+    "ipa": "/ˈkəp/",
+    "def1": "a container to drink out of in the shape of a small bowl usually with a handle",
+    "def2": "the contents of a small drinking container : cupful"
+  },
+  "dad": {
+    "ipa": "/ˈdad/",
+    "def1": "father",
+    "def2": ""
+  },
+  "dan": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "days": {
+    "ipa": "/ˈdā/",
+    "def1": "the time between sunrise and sunset : daylight",
+    "def2": "the time a planet or moon takes to make one turn on its axis"
+  },
+  "destroy": {
+    "ipa": "/di-ˈstrȯi/",
+    "def1": "to put an end to : do away with",
+    "def2": "kill"
+  },
+  "destroyed": {
+    "ipa": "/di-ˈstrȯi/",
+    "def1": "to put an end to : do away with",
+    "def2": "kill"
+  },
+  "dig": {
+    "ipa": "/ˈdig/",
+    "def1": "to turn up, loosen, or remove the soil",
+    "def2": "to turn up or remove with a shovel or by similar means"
+  },
+  "don't": {
+    "ipa": "/ˈdōnt/",
+    "def1": "do not",
+    "def2": ""
+  },
+  "down": {
+    "ipa": "/ˈdau̇n/",
+    "def1": "toward or in a lower position",
+    "def2": "to a lying or sitting position"
+  },
+  "eat": {
+    "ipa": "/ˈēt/",
+    "def1": "to chew and swallow food",
+    "def2": "to take a meal"
+  },
+  "eats": {
+    "ipa": "/ˈēt/",
+    "def1": "to chew and swallow food",
+    "def2": "to take a meal"
+  },
+  "fat": {
+    "ipa": "/ˈfat/",
+    "def1": "having much body fat",
+    "def2": "thick"
+  },
+  "father": {
+    "ipa": "/ˈfä-t͟hər/",
+    "def1": "a male parent",
+    "def2": "god"
+  },
+  "faye": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "fell": {
+    "ipa": "/ˈfel/",
+    "def1": "to cut or knock down",
+    "def2": ""
+  },
+  "field": {
+    "ipa": "/ˈfēld/",
+    "def1": "a piece of open, cleared, or cultivated land",
+    "def2": "a piece of land put to a special use or giving a special product"
+  },
+  "for": {
+    "ipa": "/fər/",
+    "def1": "by way of getting ready",
+    "def2": "toward the goal or purpose of"
+  },
+  "fox": {
+    "ipa": "/ˈfäks/",
+    "def1": "a wild animal closely related to the wolf that has a sharp snout, pointed ears, and a long bushy tail",
+    "def2": "a member of a tribe of Indigenous people formerly living in what is now Wisconsin"
+  },
+  "from": {
+    "ipa": "/frəm/",
+    "def1": "—used to show a starting point",
+    "def2": "—used to show a point of separation"
+  },
+  "full": {
+    "ipa": "/ˈfu̇l/",
+    "def1": "containing as much or as many as possible or normal",
+    "def2": "complete"
+  },
+  "fun": {
+    "ipa": "/ˈfən/",
+    "def1": "someone or something that provides amusement or enjoyment",
+    "def2": "a good time"
+  },
+  "gateway": {
+    "ipa": "/ˈgāt-ˌwā/",
+    "def1": "an opening for a gate",
+    "def2": "a passage into or out of a place or condition"
+  },
+  "get": {
+    "ipa": "/ˈget/",
+    "def1": "to gain possession of (as by receiving, earning, buying, or winning)",
+    "def2": "to obtain by request or as a favor"
+  },
+  "gets": {
+    "ipa": "/ˈget/",
+    "def1": "to gain possession of (as by receiving, earning, buying, or winning)",
+    "def2": "to obtain by request or as a favor"
+  },
+  "go": {
+    "ipa": "/ˈgō/",
+    "def1": "to move or travel from one place to or toward another",
+    "def2": "to move away : leave"
+  },
+  "goes": {
+    "ipa": "/ˈgōz /",
+    "def1": "",
+    "def2": ""
+  },
+  "got": {
+    "ipa": "/ˈgät/",
+    "def1": "",
+    "def2": ""
+  },
+  "grain": {
+    "ipa": "/ˈgrān/",
+    "def1": "the edible seed or seeds of some grasses (as wheat, corn, or oats) or a few other plants (as buckwheat)",
+    "def2": "plants that produce grain"
+  },
+  "grains": {
+    "ipa": "/ˈgrān/",
+    "def1": "the edible seed or seeds of some grasses (as wheat, corn, or oats) or a few other plants (as buckwheat)",
+    "def2": "plants that produce grain"
+  },
+  "ground": {
+    "ipa": "/ˈgrau̇nd/",
+    "def1": "the surface of the earth",
+    "def2": "soil, earth"
+  },
+  "hallway": {
+    "ipa": "/ˈhȯl-ˌwā/",
+    "def1": "hall, corridor",
+    "def2": ""
+  },
+  "ham": {
+    "ipa": "/ˈham/",
+    "def1": "a cut of meat consisting of a thigh of pork",
+    "def2": "an operator of an amateur radio station"
+  },
+  "harvest": {
+    "ipa": "/ˈhär-vəst/",
+    "def1": "the gathering of a crop",
+    "def2": "the season when crops are gathered"
+  },
+  "has": {
+    "ipa": "/ˈhaz/",
+    "def1": "",
+    "def2": ""
+  },
+  "hat": {
+    "ipa": "/ˈhat/",
+    "def1": "a covering for the head having a crown and usually a brim",
+    "def2": ""
+  },
+  "he": {
+    "ipa": "/ˈhē/",
+    "def1": "that male one",
+    "def2": "that person or one This sense is used in a general way when the sex of the person is unknown."
+  },
+  "heat": {
+    "ipa": "/ˈhēt/",
+    "def1": "to make or become warm or hot",
+    "def2": ""
+  },
+  "hen": {
+    "ipa": "/ˈhen/",
+    "def1": "a female domestic fowl",
+    "def2": "a female bird"
+  },
+  "him": {
+    "ipa": "/ˈhim/",
+    "def1": "",
+    "def2": ""
+  },
+  "his": {
+    "ipa": "/hiz/",
+    "def1": "relating to or belonging to a certain man, boy, or male animal",
+    "def2": ""
+  },
+  "hot": {
+    "ipa": "/ˈhät/",
+    "def1": "having a high temperature",
+    "def2": "having or causing the sensation of an uncomfortably high degree of body heat"
+  },
+  "in": {
+    "ipa": "/ˈin/",
+    "def1": "located or positioned within",
+    "def2": "into"
+  },
+  "is": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "it": {
+    "ipa": "/ˈit/",
+    "def1": "the thing, act, or matter about which these words are spoken or written",
+    "def2": "the whole situation"
+  },
+  "jam": {
+    "ipa": "/ˈjam/",
+    "def1": "to crowd, squeeze, or wedge into a tight position",
+    "def2": "to put into action hard or suddenly"
+  },
+  "jay": {
+    "ipa": "/ˈjā/",
+    "def1": "a usually blue bird related to the crow that has a loud call",
+    "def2": ""
+  },
+  "jean": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "joins": {
+    "ipa": "/ˈjȯin/",
+    "def1": "to come into the company of",
+    "def2": "to take part in a group activity"
+  },
+  "joy": {
+    "ipa": "/ˈjȯi/",
+    "def1": "a feeling of pleasure or happiness that comes from success, good fortune, or a sense of well-being",
+    "def2": "something that gives pleasure or happiness"
+  },
+  "jug": {
+    "ipa": "/ˈjəg/",
+    "def1": "a large deep usually earthenware or glass container with a narrow mouth and a handle",
+    "def2": ""
+  },
+  "jump": {
+    "ipa": "/ˈjəmp/",
+    "def1": "to spring into the air : leap",
+    "def2": "to pass over or cause to pass over with or as if with a leap"
+  },
+  "kicks": {
+    "ipa": "/ˈkik/",
+    "def1": "to hit with the foot",
+    "def2": "to move the legs forcefully"
+  },
+  "lid": {
+    "ipa": "/ˈlid/",
+    "def1": "a movable cover",
+    "def2": "eyelid"
+  },
+  "long": {
+    "ipa": "/ˈlȯŋ/",
+    "def1": "of great length from end to end : not short",
+    "def2": "lasting for some time : not brief"
+  },
+  "lord": {
+    "ipa": "/ˈlȯrd/",
+    "def1": "a person having power and authority over others",
+    "def2": "god"
+  },
+  "lots": {
+    "ipa": "/ˈlät/",
+    "def1": "an object used in deciding something by chance or the use of such an object to decide something",
+    "def2": "fate"
+  },
+  "loves": {
+    "ipa": "/ˈləv/",
+    "def1": "strong and warm affection (as of a parent for a child)",
+    "def2": "a great liking"
+  },
+  "man": {
+    "ipa": "/ˈman/",
+    "def1": "an adult male human being",
+    "def2": "a human being : person"
+  },
+  "may": {
+    "ipa": "/ˈmā/",
+    "def1": "have permission to",
+    "def2": "be in some degree likely to"
+  },
+  "meal": {
+    "ipa": "/ˈmēl/",
+    "def1": "the food eaten or prepared for eating at one time",
+    "def2": "the act or time of eating"
+  },
+  "meat": {
+    "ipa": "/ˈmēt/",
+    "def1": "the flesh of an animal used as food The word meat often does not include the flesh of fish or seafood.",
+    "def2": "solid food as distinguished from drink"
+  },
+  "moist": {
+    "ipa": "/ˈmȯist/",
+    "def1": "slightly wet : damp",
+    "def2": ""
+  },
+  "mom": {
+    "ipa": "/ˈmäm/",
+    "def1": "mother",
+    "def2": ""
+  },
+  "money": {
+    "ipa": "/ˈmə-nē/",
+    "def1": "something (such as coins or bills) used to buy goods and services and to pay people for their work",
+    "def2": "a person's wealth"
+  },
+  "mug": {
+    "ipa": "/ˈməg/",
+    "def1": "a large drinking cup with a handle",
+    "def2": ""
+  },
+  "nests": {
+    "ipa": "/ˈnest/",
+    "def1": "a shelter made by an animal and especially a bird for its eggs and young",
+    "def2": "a place where some animals live and usually lay eggs"
+  },
+  "net": {
+    "ipa": "/ˈnet/",
+    "def1": "a device made of strands that weave in and out with open spaces between and used to hold or catch something",
+    "def2": "a fabric made of strands of thread, cord, rope, or wire that weave in and out with much open space"
+  },
+  "new": {
+    "ipa": "/ˈnü/",
+    "def1": "recently bought, acquired, or rented",
+    "def2": "taking the place of someone or something that came before"
+  },
+  "no": {
+    "ipa": "/nō/",
+    "def1": "not at all : not any",
+    "def2": "not so —used to express disagreement or refusal"
+  },
+  "now": {
+    "ipa": "/ˈnau̇/",
+    "def1": "at this time",
+    "def2": "immediately before the present time"
+  },
+  "of": {
+    "ipa": "/əv/",
+    "def1": "—used to join an amount or a part with the whole which includes it",
+    "def2": "belonging to, relating to, or connected with"
+  },
+  "oh": {
+    "ipa": "",
+    "def1": "—used to express an emotion (as surprise or pain)",
+    "def2": "—used in direct address"
+  },
+  "on": {
+    "ipa": "/ˈȯn/",
+    "def1": "in contact with and supported by",
+    "def2": "—used to indicate means of being carried"
+  },
+  "pail": {
+    "ipa": "/ˈpāl/",
+    "def1": "a usually round container with a handle : bucket",
+    "def2": "pailful"
+  },
+  "pain": {
+    "ipa": "/ˈpān/",
+    "def1": "physical suffering that accompanies a bodily disorder (as a disease or an injury)",
+    "def2": "a very unpleasant feeling (as a prick or an ache) that is caused especially by something harmful"
+  },
+  "pan": {
+    "ipa": "/ˈpan/",
+    "def1": "a usually shallow open container used for cooking",
+    "def2": "a shallow open tray or container"
+  },
+  "pen": {
+    "ipa": "/ˈpen/",
+    "def1": "an instrument for writing with ink",
+    "def2": ""
+  },
+  "picked": {
+    "ipa": "/ˈpik/",
+    "def1": "to gather one by one",
+    "def2": "to remove bit by bit"
+  },
+  "pig": {
+    "ipa": "/ˈpig/",
+    "def1": "a hoofed stout-bodied animal with a short tail and legs, thick bristly skin, and a long flattened snout",
+    "def2": "a domestic pig developed from the wild boar and raised for meat"
+  },
+  "planted": {
+    "ipa": "/ˈplant/",
+    "def1": "to place in the ground to grow",
+    "def2": "to fill with seeds or plants"
+  },
+  "play": {
+    "ipa": "/ˈplā/",
+    "def1": "to do activities for enjoyment",
+    "def2": "to take part in a game of"
+  },
+  "plays": {
+    "ipa": "/ˈplā/",
+    "def1": "a story performed on stage",
+    "def2": "the action of or a particular action in a game"
+  },
+  "playing": {
+    "ipa": "/ˈplā/",
+    "def1": "to do activities for enjoyment",
+    "def2": "to take part in a game of"
+  },
+  "puts": {
+    "ipa": "/ˈpu̇t/",
+    "def1": "to place in or move into a particular position",
+    "def2": "to bring into a specified state or condition"
+  },
+  "rays": {
+    "ipa": "/ˈrā/",
+    "def1": "one of the lines of light that appear to be given off by a bright object",
+    "def2": "a thin beam of radiant energy (as light)"
+  },
+  "reads": {
+    "ipa": "/ˈrēd/",
+    "def1": "to understand language through written symbols for speech sounds",
+    "def2": "to speak aloud written or printed words"
+  },
+  "red": {
+    "ipa": "/ˈred/",
+    "def1": "of the color of blood : colored red",
+    "def2": "flushed with emotion (as embarrassment)"
+  },
+  "rey": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "road": {
+    "ipa": "/ˈrōd/",
+    "def1": "a hard flat surface for vehicles, persons, and animals to travel on",
+    "def2": "a way to achieve something"
+  },
+  "roy": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "rug": {
+    "ipa": "/ˈrəg/",
+    "def1": "a piece of thick heavy fabric usually with a nap or pile used especially as a floor covering",
+    "def2": ""
+  },
+  "runs": {
+    "ipa": "/ˈrən/",
+    "def1": "an act or the action of running",
+    "def2": "a score made in baseball by a base runner reaching home plate"
+  },
+  "sad": {
+    "ipa": "/ˈsad/",
+    "def1": "feeling or showing sorrow or unhappiness",
+    "def2": "causing sorrow or unhappiness"
+  },
+  "safely": {
+    "ipa": "/ˈsāf/",
+    "def1": "free or secure from harm or danger",
+    "def2": "giving protection or security against harm or danger"
+  },
+  "sam": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "save": {
+    "ipa": "/ˈsāv/",
+    "def1": "to free or keep from danger or harm",
+    "def2": "to keep from being ruined : preserve"
+  },
+  "saved": {
+    "ipa": "/ˈsāv/",
+    "def1": "to free or keep from danger or harm",
+    "def2": "to keep from being ruined : preserve"
+  },
+  "seat": {
+    "ipa": "/ˈsēt/",
+    "def1": "something (as a chair) used to sit in or on",
+    "def2": "the part of something on which a person sits"
+  },
+  "seed": {
+    "ipa": "/ˈsēd/",
+    "def1": "a tiny developing plant that is enclosed in a protective coat usually along with a supply of food and that is able to develop under suitable conditions into a plant like the one that produced it",
+    "def2": "a small structure (as a spore or a tiny dry fruit) other than a true seed by which a plant reproduces itself"
+  },
+  "settled": {
+    "ipa": "/ˈse-tᵊl/",
+    "def1": "to come to rest",
+    "def2": "to make a home"
+  },
+  "she": {
+    "ipa": "/ˈshē/",
+    "def1": "that female one",
+    "def2": ""
+  },
+  "sid": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "sincerely": {
+    "ipa": "/sin-ˈsir/",
+    "def1": "having or showing honesty : straightforward",
+    "def2": "being what it seems to be : genuine"
+  },
+  "sips": {
+    "ipa": "/ˈsip/",
+    "def1": "to take small drinks of",
+    "def2": ""
+  },
+  "sky": {
+    "ipa": "/ˈskī/",
+    "def1": "the stretch of space over the earth",
+    "def2": "weather, climate"
+  },
+  "soil": {
+    "ipa": "/ˈsȯil/",
+    "def1": "to make or become dirty",
+    "def2": ""
+  },
+  "some": {
+    "ipa": "/ˈsəm/",
+    "def1": "not known, named, or specified",
+    "def2": "being one, a part, or an unspecified number of something"
+  },
+  "soy": {
+    "ipa": "/ˈsȯi-/",
+    "def1": "a brown sauce made from soybeans and used especially in Chinese and Japanese cooking",
+    "def2": ""
+  },
+  "spend": {
+    "ipa": "/ˈspend/",
+    "def1": "to use (money) to pay for something",
+    "def2": "to cause or allow (as time) to pass"
+  },
+  "stepped": {
+    "ipa": "/ˈstept/",
+    "def1": "to move in a particular way or direction by lifting one foot and putting it down in another spot",
+    "def2": "dance"
+  },
+  "still": {
+    "ipa": "/ˈstil/",
+    "def1": "having no motion",
+    "def2": "making no sound : quiet"
+  },
+  "stones": {
+    "ipa": "/ˈstōn/",
+    "def1": "earth or mineral matter hardened in a mass : rock",
+    "def2": "a piece of rock coarser than gravel"
+  },
+  "stray": {
+    "ipa": "/ˈstrā/",
+    "def1": "a domestic animal (as a cat or dog) that is lost or has no home",
+    "def2": ""
+  },
+  "subway": {
+    "ipa": "/ˈsəb-ˌwā/",
+    "def1": "a usually electric underground railway",
+    "def2": ""
+  },
+  "sun": {
+    "ipa": "/ˈsən/",
+    "def1": "the heavenly body in our solar system whose light makes our day and around which the planets revolve",
+    "def2": "sunshine"
+  },
+  "takes": {
+    "ipa": "/ˈtāk/",
+    "def1": "to get hold of : grasp",
+    "def2": "to carry or go with from one place to another"
+  },
+  "ted": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "thanked": {
+    "ipa": "/ˈthaŋk/",
+    "def1": "to express gratitude to",
+    "def2": "to hold responsible"
+  },
+  "the": {
+    "ipa": "/t͟hə/",
+    "def1": "that or those mentioned, seen, or clearly understood",
+    "def2": "that or those near in space, time, or thought"
+  },
+  "there": {
+    "ipa": "/ˈt͟her/",
+    "def1": "in or at that place",
+    "def2": "to or into that place"
+  },
+  "they": {
+    "ipa": "/ˈt͟hā/",
+    "def1": "those individuals : those ones",
+    "def2": ""
+  },
+  "through": {
+    "ipa": "/ˈthrü/",
+    "def1": "into at one side and out at the other side of",
+    "def2": "from one side or end to another of"
+  },
+  "tim": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "time": {
+    "ipa": "/ˈtīm/",
+    "def1": "a period during which an action, process, or condition exists or continues",
+    "def2": "a point or period when something occurs : occasion"
+  },
+  "tin": {
+    "ipa": "/ˈtin/",
+    "def1": "a soft bluish white metallic chemical element used chiefly in combination with other metals or as a coating to protect other metals",
+    "def2": "something (as a can or sheet) made from tinplate"
+  },
+  "to": {
+    "ipa": "/tə/",
+    "def1": "in the direction of",
+    "def2": "against, on"
+  },
+  "toils": {
+    "ipa": "/ˈtȯil/",
+    "def1": "long hard labor",
+    "def2": ""
+  },
+  "took": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "top": {
+    "ipa": "/ˈtäp/",
+    "def1": "the highest point, level, or part of something",
+    "def2": "the upper end, edge, or surface"
+  },
+  "toy": {
+    "ipa": "/ˈtȯi/",
+    "def1": "something for a child to play with",
+    "def2": "something of little or no value"
+  },
+  "trail": {
+    "ipa": "/ˈtrāl/",
+    "def1": "to drag or draw along behind",
+    "def2": "to become weak, soft, or less"
+  },
+  "tray": {
+    "ipa": "/ˈtrā/",
+    "def1": "an open container with a flat bottom and low rim for holding, carrying, or showing articles",
+    "def2": ""
+  },
+  "tv": {
+    "ipa": "/ˈtē-ˈvē/",
+    "def1": "television",
+    "def2": ""
+  },
+  "two": {
+    "ipa": "/ˈtü/",
+    "def1": "being one more than one",
+    "def2": ""
+  },
+  "under": {
+    "ipa": "/ˈən-dər/",
+    "def1": "in or into a position below or beneath something",
+    "def2": "below some quantity or level"
+  },
+  "up": {
+    "ipa": "/ˈəp/",
+    "def1": "in or to a high or higher place or position",
+    "def2": "in or into a vertical position"
+  },
+  "walked": {
+    "ipa": "/ˈwȯk/",
+    "def1": "to move or cause to move along on foot at a natural slow pace",
+    "def2": "to cover or pass over on foot"
+  },
+  "warm": {
+    "ipa": "/ˈwȯrm/",
+    "def1": "somewhat hot",
+    "def2": "giving off a little heat"
+  },
+  "warns": {
+    "ipa": "/ˈwȯrn/",
+    "def1": "to put on guard : caution",
+    "def2": "to notify especially in advance"
+  },
+  "was": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "watching": {
+    "ipa": "/ˈwäch/",
+    "def1": "to keep in view",
+    "def2": "to be on the lookout"
+  },
+  "water": {
+    "ipa": "/ˈwȯ-tər/",
+    "def1": "the liquid that comes from the clouds as rain and forms streams, lakes, and seas",
+    "def2": "a body of water or a part of a body of water"
+  },
+  "way": {
+    "ipa": "/ˈwā/",
+    "def1": "the manner in which something is done or happens",
+    "def2": "the course traveled from one place to another : route"
+  },
+  "wet": {
+    "ipa": "/ˈwet/",
+    "def1": "containing, covered with, or soaked with liquid (as water)",
+    "def2": "rainy"
+  },
+  "when": {
+    "ipa": "/ˈhwen/",
+    "def1": "at what time",
+    "def2": "the time at which"
+  },
+  "wig": {
+    "ipa": "/ˈwig/",
+    "def1": "a manufactured covering of natural or artificial hair for the head",
+    "def2": ""
+  },
+  "will": {
+    "ipa": "/wəl/",
+    "def1": "wish to",
+    "def2": "am, is, or are willing to"
+  },
+  "with": {
+    "ipa": "/ˈwit͟h/",
+    "def1": "in the company of",
+    "def2": "by the use of"
+  },
+  "works": {
+    "ipa": "/ˈwərk/",
+    "def1": "the use of a person's physical or mental strength or ability in order to get something done or get some desired result",
+    "def2": "occupation, employment"
+  },
+  "yellow": {
+    "ipa": "/ˈye-lō/",
+    "def1": "of the color of a lemon : colored yellow",
+    "def2": "cowardly"
+  },
+  "your": {
+    "ipa": "/yər/",
+    "def1": "relating to or belonging to you",
+    "def2": "by or from you"
+  }
+}
