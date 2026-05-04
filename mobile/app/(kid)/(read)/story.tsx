@@ -27,12 +27,15 @@ import { generateAIFeedback } from "../../../lib/reading/feedbackGenerator";
 import { typography } from "../../../lib/ui/typography";
 
 import { developingContent } from "../../../lib/reading/developingContent";
+import type { MCQOption } from "../../../lib/reading/emergingContent";
+
 import { emergingContent } from "../../../lib/reading/emergingContent";
 
 import { computeDevelopingFinalScore } from "./activities/developingActivity";
 import {
   computeEmergingFinalScore,
   computeStars,
+  computeTotalComprehension,
   getEmergingStep,
   getPracticeMessage,
   isWordCorrect,
@@ -45,6 +48,40 @@ type WordResult = {
   errorType?: string;
 };
 
+type NormalizedQuestion = {
+  question: string;
+  options: MCQOption[];
+};
+
+function getQuestions(
+  activity: any,
+  isDeveloping: boolean,
+): NormalizedQuestion[] {
+  if (isDeveloping) {
+    return [
+      {
+        question: activity.literalQuestion,
+        options: activity.literalOptions,
+      },
+      {
+        question: activity.inferentialQuestion,
+        options: activity.inferentialOptions,
+      },
+    ];
+  }
+
+  if (activity.question && activity.options) {
+    return [
+      {
+        question: activity.question,
+        options: activity.options,
+      },
+    ];
+  }
+
+  return [];
+}
+
 function shuffleOptions<T>(array: T[]): T[] {
   const shuffled = [...array];
 
@@ -54,6 +91,34 @@ function shuffleOptions<T>(array: T[]): T[] {
   }
 
   return shuffled;
+}
+
+function normalizeReadingProfile(profile?: string): "Spark" | "Ember" {
+  const value = profile?.trim().toLowerCase();
+
+  if (
+    value === "developing" ||
+    value === "Developing" ||
+    value === "developing reader" ||
+    value === "ember" ||
+    value === "Ember" ||
+    value === "ember learner"
+  ) {
+    return "Ember";
+  }
+
+  if (
+    value === "emerging" ||
+    value === "Emerging" ||
+    value === "emerging reader" ||
+    value === "spark" ||
+    value === "Spark" ||
+    value === "spark learner"
+  ) {
+    return "Spark";
+  }
+
+  return "Spark";
 }
 
 export default function StoryScreen() {
@@ -81,27 +146,39 @@ export default function StoryScreen() {
 
   const [exerciseIndex] = useState(initialExerciseIndex);
 
-  const [readingProfile, setReadingProfile] = useState("Spark");
+  type Phase =
+    | "listen"
+    | "practice"
+    | "read"
+    | "readingFeedback"
+    | "question"
+    | "questionFeedback";
 
+  const [phase, setPhase] = useState<Phase>("listen");
+
+  const [readingProfile, setReadingProfile] = useState<"Spark" | "Ember">(
+    "Spark",
+  );
   const [practiceStep, setPracticeStep] = useState(0);
   const [practiceAttempts, setPracticeAttempts] = useState(0);
   const [practiceMessage, setPracticeMessage] = useState("");
   const [showPracticeModal, setShowPracticeModal] = useState(false);
 
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [selectedScore, setSelectedScore] = useState<0 | 1 | 2 | null>(null);
+  const [comprehensionScores, setComprehensionScores] = useState<(0 | 1 | 2)[]>(
+    [],
+  );
+
   const [showMCQ, setShowMCQ] = useState(false);
   const [pendingMCQ, setPendingMCQ] = useState(false);
   const [showFinalFeedback, setShowFinalFeedback] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<{
-    text: string;
-    score: 0 | 1 | 2;
-  } | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<MCQOption | null>(null);
   const [comprehensionCorrect, setComprehensionCorrect] = useState<
     boolean | null
   >(null);
 
-  const [shuffledOptions, setShuffledOptions] = useState<
-    { text: string; score: 0 | 1 | 2 }[]
-  >([]);
+  const [shuffledOptions, setShuffledOptions] = useState<MCQOption[]>([]);
 
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -115,9 +192,19 @@ export default function StoryScreen() {
     extra: string[];
   } | null>(null);
 
+  const [readingMetrics, setReadingMetrics] = useState<{
+    accuracyScore: number;
+    completenessScore: number;
+    fluencyScore: number;
+    pronScore: number;
+    finalScore: number;
+    stars: number;
+  } | null>(null);
+
   const [aiFeedback, setAiFeedback] = useState("");
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const comprehensionResult = computeTotalComprehension(comprehensionScores);
 
   const starScale = useRef(new Animated.Value(0)).current;
   const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -139,15 +226,7 @@ export default function StoryScreen() {
     const unsubscribe = onSnapshot(learnerRef, (snapshot) => {
       const data: any = snapshot.data();
       if (data?.readingProfile) {
-        const map: Record<string, string> = {
-          Emerging: "Spark",
-          Developing: "Ember",
-          Transitioning: "Flame",
-        };
-
-        const mappedProfile = map[data.readingProfile] ?? "Spark";
-
-        setReadingProfile(mappedProfile);
+        setReadingProfile(normalizeReadingProfile(data.readingProfile));
       }
     });
 
@@ -171,9 +250,13 @@ export default function StoryScreen() {
 
   const isDevelopingProfile = readingProfile === "Ember";
 
-  const content = isDevelopingProfile ? developingContent : emergingContent;
+  const content = (
+    isDevelopingProfile ? developingContent : emergingContent
+  ) as any[];
 
-  const activity = content[exerciseIndex];
+  const activity = content[exerciseIndex] as {
+    text: string;
+  } & any;
   const sentence = activity.text;
 
   const wordCount = sentence.split(" ").length;
@@ -329,9 +412,21 @@ export default function StoryScreen() {
             completenessScore,
             fluencyScore,
           )
-        : computeEmergingFinalScore(accuracyScore, completenessScore);
+        : computeEmergingFinalScore(
+            accuracyScore,
+            completenessScore,
+            fluencyScore,
+          );
 
       const stars = computeStars(finalScore);
+      setReadingMetrics({
+        accuracyScore,
+        completenessScore,
+        fluencyScore,
+        pronScore,
+        finalScore,
+        stars,
+      });
 
       const score = {
         stars,
@@ -342,20 +437,6 @@ export default function StoryScreen() {
       };
 
       setReadingResult(score);
-
-      await submitReadingResult({
-        schoolId,
-        classId,
-        learnerId,
-        activity: exerciseIndex + 1,
-        profile: readingProfile,
-        accuracyScore,
-        completenessScore,
-        fluencyScore,
-        pronScore,
-        pronunciationScore: finalScore,
-        stars,
-      });
 
       setIsGeneratingFeedback(true);
 
@@ -373,11 +454,16 @@ export default function StoryScreen() {
       setAiFeedback(feedback);
       setIsGeneratingFeedback(false);
 
-      if (activity.question && activity.options) {
-        setShuffledOptions(shuffleOptions(activity.options));
-        setPendingMCQ(true); // delay MCQ
-      }
+      const questions = getQuestions(activity, isDevelopingProfile);
 
+      if (questions.length > 0) {
+        const currentQ = questions[questionIndex];
+
+        if (currentQ?.options) {
+          setShuffledOptions(shuffleOptions(currentQ.options));
+          setPendingMCQ(true);
+        }
+      }
       setShowFeedback(true);
     } catch (error) {
       console.error("Reading error:", error);
@@ -386,6 +472,16 @@ export default function StoryScreen() {
       setAiFeedback("Let’s try again together!");
       setIsGeneratingFeedback(false);
       setShowFeedback(true);
+      const questions = getQuestions(activity, isDevelopingProfile);
+
+      if (questions.length > 0) {
+        const currentQ = questions[questionIndex];
+
+        if (currentQ?.options) {
+          setShuffledOptions(shuffleOptions(currentQ.options));
+          setPendingMCQ(true);
+        }
+      }
     }
   };
 
@@ -466,33 +562,35 @@ export default function StoryScreen() {
                   {isDevelopingProfile ? (
                     // ✅ DEVELOPING → FULL SENTENCE
                     <View className="flex-row flex-wrap justify-center max-w-[90%]">
-                      {sentence.split(" ").map((word, index) => {
-                        const cleanWord = word.replace(/[.,!?]/g, ""); // remove punctuation
-                        const data = getWordData(cleanWord);
+                      {sentence
+                        .split(" ")
+                        .map((word: string, index: number) => {
+                          const cleanWord = word.replace(/[.,!?]/g, ""); // remove punctuation
+                          const data = getWordData(cleanWord);
 
-                        return (
-                          <View key={index} className="items-center mx-2">
-                            <Text
-                              style={{
-                                fontSize: storySize,
-                                lineHeight: storySize + rf(6),
-                              }}
-                              className="font-sans-extrabold text-gray-800"
-                            >
-                              {word}
-                            </Text>
-
-                            {data?.ipa && (
+                          return (
+                            <View key={index} className="items-center mx-2">
                               <Text
-                                style={{ fontSize: rf(typography.caption) }}
-                                className="text-gray-500"
+                                style={{
+                                  fontSize: storySize,
+                                  lineHeight: storySize + rf(6),
+                                }}
+                                className="font-sans-extrabold text-gray-800"
                               >
-                                {data.ipa}
+                                {word}
                               </Text>
-                            )}
-                          </View>
-                        );
-                      })}
+
+                              {data?.ipa && (
+                                <Text
+                                  style={{ fontSize: rf(typography.caption) }}
+                                  className="text-gray-500"
+                                >
+                                  {data.ipa}
+                                </Text>
+                              )}
+                            </View>
+                          );
+                        })}
                     </View>
                   ) : !isPhraseStep ? (
                     // ✅ EMERGING → WORD PRACTICE
@@ -746,6 +844,7 @@ export default function StoryScreen() {
 
                       setPracticeStep(reset.practiceStep);
                       setPracticeAttempts(reset.practiceAttempts);
+                      setComprehensionScores([]);
 
                       setShowFeedback(false);
                       handleReset();
@@ -799,7 +898,10 @@ export default function StoryScreen() {
             <View className="flex-1 bg-black/50 items-center justify-center">
               <View className="bg-white rounded-3xl p-8 w-[50%] items-center">
                 <Text className="text-2xl font-sans-bold text-secondary mb-6 text-center">
-                  {activity.question}
+                  {
+                    getQuestions(activity, isDevelopingProfile)[questionIndex]
+                      ?.question
+                  }
                 </Text>
 
                 {shuffledOptions.map((opt, index) => (
@@ -817,12 +919,14 @@ export default function StoryScreen() {
                 ))}
 
                 {selectedAnswer && (
-                  <Text className="mt-4 text-lg font-sans-bold">
-                    {selectedAnswer.score === 2
-                      ? "Great job! You understood it well 👍"
-                      : selectedAnswer.score === 1
-                        ? "Almost there! Keep practicing 😊"
-                        : "Let's try again next time 💪"}
+                  <Text className="mt-4 text-lg font-sans-bold text-center">
+                    {isDevelopingProfile
+                      ? selectedAnswer.feedback
+                      : selectedAnswer.score === 2
+                        ? "Great job! You understood it well 👍"
+                        : selectedAnswer.score === 1
+                          ? "Almost there! Keep practicing 😊"
+                          : "Let's try again next time 💪"}
                   </Text>
                 )}
 
@@ -836,17 +940,73 @@ export default function StoryScreen() {
                     const pcmScore = selectedAnswer.score; // 0 | 1 | 2
 
                     setComprehensionCorrect(isCorrect);
+                    setComprehensionScores((prev) => [...prev, pcmScore]);
 
                     console.log("PCM Score:", pcmScore);
 
-                    setTimeout(() => {
-                      setShowMCQ(false);
+                    setTimeout(async () => {
+                      const questions = getQuestions(
+                        activity,
+                        isDevelopingProfile,
+                      );
 
-                      // keep selectedAnswer for final display
-                      setComprehensionCorrect(null);
-                      setShuffledOptions([]);
+                      if (questionIndex < questions.length - 1) {
+                        // 👉 go to next question
+                        const nextIndex = questionIndex + 1;
 
-                      setShowFinalFeedback(true); // 👈 NEW FINAL STEP
+                        setQuestionIndex(nextIndex);
+                        setSelectedAnswer(null);
+                        setComprehensionCorrect(null);
+
+                        const nextQ = questions[nextIndex];
+
+                        if (nextQ?.options) {
+                          setShuffledOptions(shuffleOptions(nextQ.options));
+                        }
+                      } else {
+                        // 👉 all questions done
+                        setShowMCQ(false);
+
+                        setComprehensionCorrect(null);
+                        setShuffledOptions([]);
+
+                        setQuestionIndex(0);
+
+                        // 🧠 compute comprehension
+                        const updatedScores = [
+                          ...comprehensionScores,
+                          pcmScore,
+                        ];
+
+                        const comprehensionResult =
+                          computeTotalComprehension(updatedScores);
+
+                        // ✅ submit AFTER MCQ is complete
+                        if (readingMetrics) {
+                          await submitReadingResult({
+                            schoolId,
+                            classId,
+                            learnerId,
+                            activity: exerciseIndex + 1,
+                            profile: readingProfile,
+
+                            accuracyScore: readingMetrics.accuracyScore,
+                            completenessScore: readingMetrics.completenessScore,
+                            fluencyScore: readingMetrics.fluencyScore,
+                            pronScore: readingMetrics.pronScore,
+
+                            finalScore: readingMetrics.finalScore,
+                            stars: readingMetrics.stars,
+
+                            comprehensionScore: comprehensionResult.score,
+                            comprehensionMaxScore: comprehensionResult.maxScore,
+                          });
+                          console.log("🚀 CALLING CLOUD FUNCTION");
+                        }
+
+                        // 👉 show final UI
+                        setShowFinalFeedback(true);
+                      }
                     }, 1200);
                   }}
                   className="bg-green-500 px-8 py-3 rounded-full mt-6"
@@ -859,31 +1019,111 @@ export default function StoryScreen() {
 
           <Modal visible={showFinalFeedback} transparent animationType="fade">
             <View className="flex-1 bg-black/50 items-center justify-center">
-              <View className="bg-white rounded-3xl p-8 items-center w-[50%]">
-                <Text className="text-2xl font-sans-bold text-secondary mb-4">
-                  Final Result
-                </Text>
-
-                <Text className="text-lg mb-2">
-                  ⭐ Reading Stars: {readingResult?.stars ?? 0}
-                </Text>
-
-                <Text className="text-lg mb-4">
-                  🧠 Comprehension Score: {selectedAnswer?.score ?? 0} / 2
-                </Text>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    setShowFinalFeedback(false);
-
-                    setSelectedAnswer(null);
-
-                    router.back();
+              <View
+                style={{
+                  width: width * 0.6, // ✅ not full width
+                  maxWidth: 520, // ✅ caps size on tablets
+                  maxHeight: height * 0.75, // ✅ prevents overflow
+                  borderRadius: rf(28),
+                }}
+                className="bg-white overflow-hidden"
+              >
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{
+                    paddingHorizontal: rf(20),
+                    paddingTop: rf(20),
+                    paddingBottom: rf(16),
+                    alignItems: "center",
                   }}
-                  className="bg-green-500 px-8 py-3 rounded-full"
                 >
-                  <Text className="text-white font-sans-bold">Continue</Text>
-                </TouchableOpacity>
+                  {/* TITLE */}
+                  <Text
+                    style={{ fontSize: rfs(26), marginBottom: rf(4) }}
+                    className="font-sans-bold text-secondary text-center"
+                  >
+                    🎉 Great Work!
+                  </Text>
+
+                  <Text
+                    style={{ fontSize: rfs(14), marginBottom: rf(14) }}
+                    className="text-gray-500 text-center"
+                  >
+                    Here’s how you did in this activity
+                  </Text>
+
+                  {/* ⭐ READING */}
+                  <View className="w-full bg-yellow-50 rounded-2xl p-4 mb-4 items-center">
+                    <Text className="font-sans-bold text-gray-700 mb-2">
+                      📖 Reading Performance
+                    </Text>
+
+                    <Text style={{ fontSize: rfs(34) }}>
+                      {readingResult?.stars === 0
+                        ? "😊"
+                        : "⭐".repeat(readingResult?.stars ?? 0)}
+                    </Text>
+
+                    <Text className="text-sm text-gray-600 text-center mt-1">
+                      {readingResult?.stars === 3
+                        ? "Excellent reading!"
+                        : readingResult?.stars === 2
+                          ? "Good job! Keep improving!"
+                          : readingResult?.stars === 1
+                            ? "Nice try! Practice more!"
+                            : "Let’s keep practicing!"}
+                    </Text>
+                  </View>
+
+                  {/* 🧠 COMPREHENSION */}
+                  <View className="w-full bg-blue-50 rounded-2xl p-4 mb-4">
+                    <Text className="font-sans-bold text-gray-700 mb-2 text-center">
+                      🧠 Comprehension
+                    </Text>
+
+                    <Text className="text-lg text-center font-sans-bold text-blue-600 mb-1">
+                      {comprehensionResult.score} /{" "}
+                      {comprehensionResult.maxScore}
+                    </Text>
+
+                    {isDevelopingProfile && (
+                      <View className="mt-2">
+                        <View className="flex-row justify-between">
+                          <Text>Literal</Text>
+                          <Text className="font-sans-bold">
+                            {comprehensionScores[0] ?? 0} / 2
+                          </Text>
+                        </View>
+
+                        <View className="flex-row justify-between">
+                          <Text>Inferential</Text>
+                          <Text className="font-sans-bold">
+                            {comprehensionScores[1] ?? 0} / 2
+                          </Text>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* BUTTON */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowFinalFeedback(false);
+                      setSelectedAnswer(null);
+                      setComprehensionScores([]);
+                      router.back();
+                    }}
+                    style={{
+                      paddingHorizontal: rf(28),
+                      paddingVertical: rf(12),
+                      borderRadius: rf(50),
+                      marginTop: rf(6),
+                    }}
+                    className="bg-green-500"
+                  >
+                    <Text className="text-white font-sans-bold">Continue</Text>
+                  </TouchableOpacity>
+                </ScrollView>
               </View>
             </View>
           </Modal>

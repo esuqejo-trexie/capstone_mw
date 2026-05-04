@@ -978,5 +978,850 @@
     "ipa": "/yər/",
     "def1": "relating to or belonging to you",
     "def2": "by or from you"
+  },
+  "adds": {
+    "ipa": "/ˈad/",
+    "def1": "to combine numbers into a single sum",
+    "def2": "to join or unite to something"
+  },
+  "all": {
+    "ipa": "/ˈȯl/",
+    "def1": "every one of",
+    "def2": "the whole of"
+  },
+  "answered": {
+    "ipa": "",
+    "def1": "to speak or write in order to satisfy a question",
+    "def2": "to write a response to a letter or e-mail"
+  },
+  "anymore": {
+    "ipa": "/ˌe-nē-ˈmȯr/",
+    "def1": "in the recent or present period of time",
+    "def2": ""
+  },
+  "around": {
+    "ipa": "/ə-ˈrau̇nd/",
+    "def1": "in circumference",
+    "def2": "in or along a curving course"
+  },
+  "asked": {
+    "ipa": "/ˈask/",
+    "def1": "to seek information by posing a question",
+    "def2": "to make a request"
+  },
+  "asks": {
+    "ipa": "/ˈask/",
+    "def1": "to seek information by posing a question",
+    "def2": "to make a request"
+  },
+  "aware": {
+    "ipa": "/ə-ˈwer/",
+    "def1": "having or showing understanding or knowledge : conscious",
+    "def2": ""
+  },
+  "bags": {
+    "ipa": "/ˈbag/",
+    "def1": "a container made of flexible material (as paper or plastic)",
+    "def2": "purse, handbag"
+  },
+  "bake": {
+    "ipa": "/ˈbāk/",
+    "def1": "to cook or become cooked in a dry heat especially in an oven",
+    "def2": "to dry or harden by heat"
+  },
+  "bakes": {
+    "ipa": "/ˈbāk/",
+    "def1": "to cook or become cooked in a dry heat especially in an oven",
+    "def2": "to dry or harden by heat"
+  },
+  "beautiful": {
+    "ipa": "/ˈbyü-ti-fəl/",
+    "def1": "having qualities of beauty : giving pleasure to the mind or senses",
+    "def2": "very good : excellent"
+  },
+  "became": {
+    "ipa": "/bi-ˈkəm/",
+    "def1": "to come or grow to be",
+    "def2": "to be suitable to especially in a pleasing way"
+  },
+  "before": {
+    "ipa": "/bi-ˈfȯr/",
+    "def1": "at an earlier time",
+    "def2": "ahead"
+  },
+  "believing": {
+    "ipa": "/bə-ˈlēv/",
+    "def1": "to have faith or confidence in the existence or worth of",
+    "def2": "to accept as true"
+  },
+  "best": {
+    "ipa": "/ˈbest/",
+    "def1": "better than all others",
+    "def2": "most appropriate, useful, or helpful"
+  },
+  "bird": {
+    "ipa": "/ˈbərd/",
+    "def1": "an animal that lays eggs and has wings and a body covered with feathers",
+    "def2": ""
+  },
+  "birthday": {
+    "ipa": "/ˈbərth-ˌdā/",
+    "def1": "the day or anniversary of someone's birth",
+    "def2": "a day of beginning"
+  },
+  "both": {
+    "ipa": "/ˈbōth/",
+    "def1": "each one of two things or people : the two",
+    "def2": ""
+  },
+  "bright": {
+    "ipa": "/ˈbrīt/",
+    "def1": "giving off or filled with much light",
+    "def2": "very clear or vivid in color"
+  },
+  "brings": {
+    "ipa": "/ˈbriŋ/",
+    "def1": "to cause to come by carrying or leading : take along",
+    "def2": "to cause to reach a certain state or take a certain action"
+  },
+  "brought": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "bus": {
+    "ipa": "/ˈbəs/",
+    "def1": "a large motor vehicle for carrying passengers",
+    "def2": ""
+  },
+  "by": {
+    "ipa": "/bī/",
+    "def1": "close to : near",
+    "def2": "so as to go on"
+  },
+  "cake": {
+    "ipa": "/ˈkāk/",
+    "def1": "a baked food made from a sweet batter or dough",
+    "def2": "a usually flat round piece of food that is baked or fried"
+  },
+  "cart": {
+    "ipa": "/ˈkärt/",
+    "def1": "a heavy vehicle with two wheels usually drawn by horses and used for hauling",
+    "def2": "a light vehicle pushed or pulled by hand"
+  },
+  "clap": {
+    "ipa": "/ˈklap/",
+    "def1": "to hit (the palms of the hands) together usually more than once",
+    "def2": "to hit or touch with the open hand"
+  },
+  "come": {
+    "ipa": "/ˈkəm/",
+    "def1": "to move toward : approach",
+    "def2": "to go or travel to a place"
+  },
+  "crying": {
+    "ipa": "/ˈkrī/",
+    "def1": "to shed tears : weep",
+    "def2": "to make a loud call : shout, exclaim"
+  },
+  "deeper": {
+    "ipa": "/ˈdēp/",
+    "def1": "reaching far down below the surface",
+    "def2": "reaching far inward or back from the front or outer part"
+  },
+  "did": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "dino": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "do": {
+    "ipa": "/dü/",
+    "def1": "to cause (as an act or action) to happen : perform",
+    "def2": "act, behave"
+  },
+  "dying": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "earth": {
+    "ipa": "/ˈərth/",
+    "def1": "the planet that we live on",
+    "def2": "land as distinguished from sea and air"
+  },
+  "every": {
+    "ipa": "/ˈev-rē/",
+    "def1": "including each of a group or series without leaving out any",
+    "def2": "at regularly spaced times or distances"
+  },
+  "everybody": {
+    "ipa": "/ˈev-ri-ˌbə-dē/",
+    "def1": "every person",
+    "def2": ""
+  },
+  "everyone": {
+    "ipa": "/ˈev-rē-wən/",
+    "def1": "every person",
+    "def2": ""
+  },
+  "everywhere": {
+    "ipa": "/ˈev-rē-ˌhwer/",
+    "def1": "in or to every place",
+    "def2": ""
+  },
+  "excited": {
+    "ipa": "/ik-ˈsī-təd/",
+    "def1": "very enthusiastic and eager",
+    "def2": ""
+  },
+  "exclaimed": {
+    "ipa": "/ik-ˈsklām/",
+    "def1": "to speak or cry out suddenly or with strong feeling",
+    "def2": ""
+  },
+  "face": {
+    "ipa": "/ˈfās/",
+    "def1": "the front part of the head",
+    "def2": "an expression of the face"
+  },
+  "familliar": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "few": {
+    "ipa": "/ˈfyü/",
+    "def1": "not many people or things",
+    "def2": ""
+  },
+  "fight": {
+    "ipa": "/ˈfīt/",
+    "def1": "to struggle in battle or in physical combat",
+    "def2": "to argue angrily : quarrel"
+  },
+  "fish-full": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "food": {
+    "ipa": "/ˈfüd/",
+    "def1": "the material that people and animals eat : material containing carbohydrates, fats, proteins, and supplements (as minerals and vitamins) that is taken in by and used in the living body for growth and repair and as a source of energy for activities",
+    "def2": "inorganic substances (as nitrate and carbon dioxide) taken in by green plants and used to build organic nutrients"
+  },
+  "forest": {
+    "ipa": "/ˈfȯr-əst/",
+    "def1": "a growth of trees and underbrush covering a large area",
+    "def2": ""
+  },
+  "found": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "friends": {
+    "ipa": "/ˈfrend/",
+    "def1": "a person who has a strong liking for and trust in another person",
+    "def2": "a person who is not an enemy"
+  },
+  "garbage": {
+    "ipa": "/ˈgär-bij/",
+    "def1": "material (as waste food) that has been thrown out",
+    "def2": "something that is worthless, useless, or untrue"
+  },
+  "gate": {
+    "ipa": "/ˈgāt/",
+    "def1": "an opening in a wall or fence",
+    "def2": "a part of a barrier (as a fence) that opens and closes like a door"
+  },
+  "gift": {
+    "ipa": "/ˈgift/",
+    "def1": "a special ability : talent",
+    "def2": "something given : present"
+  },
+  "give": {
+    "ipa": "/ˈgiv/",
+    "def1": "to hand over to be kept : present",
+    "def2": "to cause to have"
+  },
+  "grabbed": {
+    "ipa": "/ˈgrab/",
+    "def1": "to grasp or seize suddenly",
+    "def2": ""
+  },
+  "grandmother": {
+    "ipa": "/ˈgrand-ˌmə-t͟hər/",
+    "def1": "the mother of someone's father or mother",
+    "def2": "a female ancestor"
+  },
+  "had": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "hands": {
+    "ipa": "/ˈhand/",
+    "def1": "the body part at the end of the human arm that includes the fingers and thumb",
+    "def2": "a bodily structure (as the hind foot of an ape) like the human hand in function or form"
+  },
+  "happy": {
+    "ipa": "/ˈha-pē/",
+    "def1": "feeling or showing pleasure : glad",
+    "def2": "enjoying a condition or situation : content"
+  },
+  "have": {
+    "ipa": "/ˈhav/",
+    "def1": "to hold or own",
+    "def2": "to possess as a characteristic"
+  },
+  "her": {
+    "ipa": "/ˈhər/",
+    "def1": "relating to or belonging to a certain woman, girl, or female animal",
+    "def2": ""
+  },
+  "herself": {
+    "ipa": "/hər-ˈself/",
+    "def1": "her own self",
+    "def2": ""
+  },
+  "home": {
+    "ipa": "/ˈhōm/",
+    "def1": "the house or apartment where a person lives",
+    "def2": "the place where a person was born or grew up"
+  },
+  "house": {
+    "ipa": "/ˈhau̇s/",
+    "def1": "a place built for people to live in",
+    "def2": "something (as a nest or den) used by an animal for shelter"
+  },
+  "hub": {
+    "ipa": "/ˈhəb/",
+    "def1": "the center of a wheel, propeller, or fan",
+    "def2": "a center of activity"
+  },
+  "huge": {
+    "ipa": "/ˈhyüj/",
+    "def1": "great in size or degree : vast",
+    "def2": ""
+  },
+  "hugged": {
+    "ipa": "/ˈhəg/",
+    "def1": "to clasp in the arms : embrace",
+    "def2": "to keep close to"
+  },
+  "hungry": {
+    "ipa": "/ˈhəŋ-grē/",
+    "def1": "feeling or showing hunger",
+    "def2": "having a strong desire"
+  },
+  "i": {
+    "ipa": "/ˈī/",
+    "def1": "the ninth letter of the English alphabet",
+    "def2": "the number one in Roman numerals"
+  },
+  "its": {
+    "ipa": "/ˈits/",
+    "def1": "relating to or belonging to it or itself",
+    "def2": ""
+  },
+  "jake": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "just": {
+    "ipa": "/ˈjəst/",
+    "def1": "being what is deserved",
+    "def2": "having a foundation in fact or reason : reasonable"
+  },
+  "kate": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "know": {
+    "ipa": "/ˈnō/",
+    "def1": "to recognize the identity of",
+    "def2": "to be aware of the truth of"
+  },
+  "leafy": {
+    "ipa": "/ˈlē-fē/",
+    "def1": "having, covered with, or resembling leaves",
+    "def2": ""
+  },
+  "letter": {
+    "ipa": "/ˈle-tər/",
+    "def1": "one of the marks that are symbols for speech sounds in writing or print and that make up the alphabet",
+    "def2": "a written or printed communication (as one sent through the mail)"
+  },
+  "light": {
+    "ipa": "/ˈlīt/",
+    "def1": "the bright form of energy given off by something (as the sun) that makes it possible to see",
+    "def2": "a source (as a lamp) of light"
+  },
+  "little": {
+    "ipa": "/ˈli-tᵊl/",
+    "def1": "small in size",
+    "def2": "small in quantity"
+  },
+  "looked": {
+    "ipa": "/ˈlu̇k/",
+    "def1": "to use the power of vision : see",
+    "def2": "to direct the attention or eyes"
+  },
+  "love": {
+    "ipa": "/ˈləv/",
+    "def1": "strong and warm affection (as of a parent for a child)",
+    "def2": "a great liking"
+  },
+  "make": {
+    "ipa": "/ˈmāk/",
+    "def1": "to form or put together out of material or parts",
+    "def2": "to cause to exist or occur"
+  },
+  "market": {
+    "ipa": "/ˈmär-kət/",
+    "def1": "a public place where people gather to buy and sell things",
+    "def2": "a store where foods are sold to the public"
+  },
+  "might": {
+    "ipa": "/ˈmīt/",
+    "def1": "—used as a helping verb to show that something is possible but not likely",
+    "def2": ""
+  },
+  "mother": {
+    "ipa": "/ˈmə-t͟hər/",
+    "def1": "a female parent",
+    "def2": "a nun in charge of a convent"
+  },
+  "mountains": {
+    "ipa": "/ˈmau̇n-tᵊn/",
+    "def1": "a raised area of land higher than a hill",
+    "def2": "a great mass or huge number"
+  },
+  "much": {
+    "ipa": "/ˈməch/",
+    "def1": "great in amount or extent",
+    "def2": "great in importance"
+  },
+  "my": {
+    "ipa": "/ˈmī/",
+    "def1": "belonging or relating to me or myself",
+    "def2": ""
+  },
+  "name": {
+    "ipa": "/ˈnām/",
+    "def1": "a word or combination of words by which a person or thing is known",
+    "def2": "reputation"
+  },
+  "named": {
+    "ipa": "",
+    "def1": "to choose a word or words by which something will be known : give a name to",
+    "def2": "to refer to by the word by which a person or thing is known : call by name"
+  },
+  "needs": {
+    "ipa": "/ˈnēd/",
+    "def1": "to suffer from the lack of something important to life or health",
+    "def2": "to be necessary"
+  },
+  "nest": {
+    "ipa": "/ˈnest/",
+    "def1": "a shelter made by an animal and especially a bird for its eggs and young",
+    "def2": "a place where some animals live and usually lay eggs"
+  },
+  "never": {
+    "ipa": "/ˈne-vər/",
+    "def1": "not ever : at no time",
+    "def2": "not to any extent or in any way"
+  },
+  "night": {
+    "ipa": "/ˈnīt/",
+    "def1": "the time between dusk and dawn when there is no sunlight",
+    "def2": "the early part of the night : nightfall"
+  },
+  "not": {
+    "ipa": "/ˈnät/",
+    "def1": "—used to make a word or group of words negative",
+    "def2": "—used to stand for the negative of a group of words that comes before"
+  },
+  "once": {
+    "ipa": "/ˈwəns/",
+    "def1": "one time only",
+    "def2": "at some time in the past : formerly"
+  },
+  "only": {
+    "ipa": "/ˈōn-lē/",
+    "def1": "alone in or of a class or kind : sole",
+    "def2": "best without doubt"
+  },
+  "or": {
+    "ipa": "/ər/",
+    "def1": "—used between words or phrases that are choices",
+    "def2": ""
+  },
+  "palm": {
+    "ipa": "/ˈpäm/",
+    "def1": "a tropical tree, shrub, or vine with a usually tall stem or trunk topped with large leaves that are shaped like feathers or fans",
+    "def2": ""
+  },
+  "people": {
+    "ipa": "/ˈpē-pəl/",
+    "def1": "all persons considered together",
+    "def2": "a group of human beings who have something in common The word people is often used in compounds instead of persons."
+  },
+  "pests": {
+    "ipa": "/ˈpest/",
+    "def1": "nuisance",
+    "def2": "a plant or animal that is harmful to humans or property"
+  },
+  "pinched": {
+    "ipa": "/ˈpinch/",
+    "def1": "to squeeze between the finger and thumb or between the jaws of an instrument",
+    "def2": "to squeeze painfully"
+  },
+  "plant's": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "pollution": {
+    "ipa": "/pə-ˈlü-shən/",
+    "def1": "the action of making something impure and often unsafe or unsuitable for use : the state of being polluted",
+    "def2": ""
+  },
+  "put": {
+    "ipa": "/ˈpu̇t/",
+    "def1": "to place in or move into a particular position",
+    "def2": "to bring into a specified state or condition"
+  },
+  "really": {
+    "ipa": "/ˈrē-ə-lē/",
+    "def1": "in fact",
+    "def2": "without question"
+  },
+  "rests": {
+    "ipa": "",
+    "def1": "something that is left over : remainder",
+    "def2": ""
+  },
+  "rivers": {
+    "ipa": "/ˈri-vər/",
+    "def1": "a natural stream of water larger than a brook or creek",
+    "def2": "a large stream or flow"
+  },
+  "rolled": {
+    "ipa": "/ˈrōl/",
+    "def1": "to move or cause to move by turning over and over on a surface",
+    "def2": "to shape or become shaped in rounded form"
+  },
+  "saw": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "say": {
+    "ipa": "/ˈsā/",
+    "def1": "to express in words",
+    "def2": "to state as an opinion or decision : declare"
+  },
+  "says": {
+    "ipa": "/ˈsā/",
+    "def1": "to express in words",
+    "def2": "to state as an opinion or decision : declare"
+  },
+  "scout": {
+    "ipa": "/ˈskau̇t/",
+    "def1": "to explore an area to find out information about it",
+    "def2": "to search an area for someone or something"
+  },
+  "seas": {
+    "ipa": "/ˈsē/",
+    "def1": "a body of salt water not as large as an ocean and often nearly surrounded by land",
+    "def2": "ocean"
+  },
+  "seeing": {
+    "ipa": "/ˈsē/",
+    "def1": "to have the power of sight",
+    "def2": "to view with the eyes"
+  },
+  "seemed": {
+    "ipa": "/ˈsēm/",
+    "def1": "to give the impression of being : appear",
+    "def2": "—used to make a statement less forceful or more polite"
+  },
+  "shed": {
+    "ipa": "/ˈshed/",
+    "def1": "to give off in drops",
+    "def2": "to get rid of"
+  },
+  "shop": {
+    "ipa": "/ˈshäp/",
+    "def1": "a place where goods are sold : a usually small store",
+    "def2": "a worker's place of business"
+  },
+  "sight": {
+    "ipa": "/ˈsīt/",
+    "def1": "the function, process, or power of seeing : the sense by which a person or animal becomes aware of the position, form, and color of objects",
+    "def2": "the act of seeing"
+  },
+  "skip": {
+    "ipa": "/ˈskip/",
+    "def1": "to move by taking short light steps and jumps",
+    "def2": "to pass over or omit an item, space, or step"
+  },
+  "slowly": {
+    "ipa": "/ˈslō/",
+    "def1": "moving, flowing, or going at less than the usual speed",
+    "def2": "taking more time than is expected or desired"
+  },
+  "smiled": {
+    "ipa": "/ˈsmīl/",
+    "def1": "make the corners of the mouth turn up in an expression of amusement or pleasure",
+    "def2": "to look with amusement or pleasure"
+  },
+  "smiles": {
+    "ipa": "/ˈsmīl/",
+    "def1": "make the corners of the mouth turn up in an expression of amusement or pleasure",
+    "def2": "to look with amusement or pleasure"
+  },
+  "so": {
+    "ipa": "/ˈsō/",
+    "def1": "in the way indicated",
+    "def2": "in the same way : also"
+  },
+  "spent": {
+    "ipa": "/ˈspent/",
+    "def1": "used up",
+    "def2": "drained of energy"
+  },
+  "started": {
+    "ipa": "/ˈstärt/",
+    "def1": "to begin an activity",
+    "def2": "to come or bring into being or action"
+  },
+  "stood": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "strong": {
+    "ipa": "/ˈstrȯŋ/",
+    "def1": "having great power in the muscles",
+    "def2": "healthy"
+  },
+  "swim": {
+    "ipa": "/ˈswim/",
+    "def1": "to move through or in water by moving arms, legs, fins, or tail",
+    "def2": "to cross by swimming"
+  },
+  "swing": {
+    "ipa": "/ˈswiŋ/",
+    "def1": "to move rapidly in a sweeping curve",
+    "def2": "to turn on a hinge or pivot"
+  },
+  "tall": {
+    "ipa": "/ˈtȯl/",
+    "def1": "having unusually great height",
+    "def2": "of a stated height"
+  },
+  "taller": {
+    "ipa": "/ˈtȯl/",
+    "def1": "having unusually great height",
+    "def2": "of a stated height"
+  },
+  "tears": {
+    "ipa": "/ˈtir/",
+    "def1": "a drop of the salty liquid that moistens the eyes and the inner eyelids and that flows from the eyes when someone is crying",
+    "def2": "an act of crying"
+  },
+  "teary-eyed": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "tell": {
+    "ipa": "/ˈtel/",
+    "def1": "to let a person know something : to give information to",
+    "def2": "order"
+  },
+  "than": {
+    "ipa": "/t͟hən/",
+    "def1": "when compared to the way in which, the extent to which, or the degree to which",
+    "def2": ""
+  },
+  "thank": {
+    "ipa": "/ˈthaŋk/",
+    "def1": "to express gratitude to",
+    "def2": "to hold responsible"
+  },
+  "that": {
+    "ipa": "/ˈt͟hat/",
+    "def1": "the person or thing seen, mentioned, or understood",
+    "def2": "the time, action, or event mentioned"
+  },
+  "their": {
+    "ipa": "/t͟hər/",
+    "def1": "of or relating to them or themselves especially as owners or as agents or objects of an action",
+    "def2": ""
+  },
+  "then": {
+    "ipa": "/ˈt͟hen/",
+    "def1": "at that time",
+    "def2": "soon after that : next"
+  },
+  "these": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "this": {
+    "ipa": "/ˈt͟his/",
+    "def1": "the one nearer",
+    "def2": "the person, thing, or idea that is present or near in place, time, or thought or that has just been mentioned"
+  },
+  "tina": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "together": {
+    "ipa": "/tə-ˈge-t͟hər/",
+    "def1": "in or into one group, body, or place",
+    "def2": "in touch or in partnership with"
+  },
+  "toward": {
+    "ipa": "/ˈtō-ərd/",
+    "def1": "in the direction of",
+    "def2": "along a course leading to"
+  },
+  "tree": {
+    "ipa": "/ˈtrē/",
+    "def1": "a long-lived woody plant that has a single usually tall main stem with few or no branches on its lower part",
+    "def2": "a plant of treelike form"
+  },
+  "trees": {
+    "ipa": "/ˈtrē/",
+    "def1": "a long-lived woody plant that has a single usually tall main stem with few or no branches on its lower part",
+    "def2": "a plant of treelike form"
+  },
+  "turtle": {
+    "ipa": "/ˈtər-tᵊl/",
+    "def1": "a reptile that lives on land, in water, or both and has a toothless horny beak and a shell of bony plates which covers the body and into which the head, legs, and tail can usually be drawn",
+    "def2": ""
+  },
+  "ugly": {
+    "ipa": "/ˈə-glē/",
+    "def1": "unpleasant to look at : not attractive",
+    "def2": "offensive"
+  },
+  "upon": {
+    "ipa": "/ə-ˈpȯn/",
+    "def1": "on",
+    "def2": ""
+  },
+  "us": {
+    "ipa": "/əs/",
+    "def1": "",
+    "def2": ""
+  },
+  "valentine": {
+    "ipa": "/ˈva-lən-ˌtīn/",
+    "def1": "a greeting card or gift sent or given on Valentine's Day",
+    "def2": "a sweetheart given something as a sign of affection on Valentine's Day"
+  },
+  "very": {
+    "ipa": "/ˈver-ē/",
+    "def1": "to a great degree : extremely",
+    "def2": "in actual fact : truly"
+  },
+  "want": {
+    "ipa": "/ˈwȯnt/",
+    "def1": "to desire, wish, or long for something",
+    "def2": "to feel or suffer the need of something"
+  },
+  "went": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "were": {
+    "ipa": "",
+    "def1": "",
+    "def2": ""
+  },
+  "west": {
+    "ipa": "/ˈwest/",
+    "def1": "to or toward the direction of sunset",
+    "def2": ""
+  },
+  "what": {
+    "ipa": "/ˈhwät/",
+    "def1": "which thing or things",
+    "def2": "which sort of thing or person"
+  },
+  "whatever": {
+    "ipa": "/hwät-ˈe-vər/",
+    "def1": "anything or everything that",
+    "def2": "no matter what"
+  },
+  "who": {
+    "ipa": "/ˈhü/",
+    "def1": "what or which person or people",
+    "def2": "—used to stand for a person or people at the beginning of a clause"
+  },
+  "why": {
+    "ipa": "/ˈhwī/",
+    "def1": "for what cause or reason",
+    "def2": ""
+  },
+  "won't": {
+    "ipa": "/ˈwōnt/",
+    "def1": "will not",
+    "def2": ""
+  },
+  "wrap": {
+    "ipa": "/ˈrap/",
+    "def1": "to cover by winding or folding",
+    "def2": "to enclose in a package"
+  },
+  "wreath": {
+    "ipa": "/ˈrēth/",
+    "def1": "something twisted or woven into a circular shape",
+    "def2": ""
+  },
+  "wren": {
+    "ipa": "/ˈren/",
+    "def1": "a small brown songbird with a short tail that points upward",
+    "def2": ""
+  },
+  "wrinkle": {
+    "ipa": "/ˈriŋ-kəl/",
+    "def1": "a crease or small fold (as in the skin or in cloth)",
+    "def2": "a clever notion or trick"
+  },
+  "write": {
+    "ipa": "/ˈrīt/",
+    "def1": "to form letters or words with pen or pencil",
+    "def2": "to form the letters or the words of (as on paper)"
+  },
+  "wrong": {
+    "ipa": "/ˈrȯŋ/",
+    "def1": "not the one wanted or intended",
+    "def2": "not correct or true : false"
+  },
+  "yes": {
+    "ipa": "/ˈyes/",
+    "def1": "—used to express agreement in answer to a question, request, or offer or with an earlier statement",
+    "def2": "—used to introduce a phrase with greater emphasis or clearness"
+  },
+  "you": {
+    "ipa": "/ˈyü/",
+    "def1": "the person, thing, or group these words are spoken or written to",
+    "def2": "anyone at all"
   }
 }

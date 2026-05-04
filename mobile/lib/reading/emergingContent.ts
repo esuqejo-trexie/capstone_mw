@@ -1,6 +1,7 @@
 export type MCQOption = {
   text: string;
   score: 0 | 1 | 2;
+  feedback?: string;
 };
 
 export type ReadingPage = {

@@ -91,8 +91,9 @@ export function getPracticeMessage(
 export function computeEmergingFinalScore(
   accuracy: number,
   completeness: number,
+  fluency: number,
 ): number {
-  return Math.round(accuracy * 0.8 + completeness * 0.2);
+  return Math.round(accuracy * 0.7 + completeness * 0.2 + fluency * 0.1);
 }
 
 /**

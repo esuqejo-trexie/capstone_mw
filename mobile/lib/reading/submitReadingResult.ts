@@ -13,7 +13,10 @@ type SubmitReadingResultParams = {
   completenessScore: number;
   fluencyScore: number;
   pronScore: number;
-  pronunciationScore: number;
+
+  finalScore: number;
+  comprehensionScore?: number;
+  comprehensionMaxScore?: number;
 };
 
 export async function submitReadingResult(data: SubmitReadingResultParams) {
