@@ -22,6 +22,7 @@ import { getLearnerSession } from "../../../lib/sessions/kidSession";
 
 import { startRecording, stopRecording } from "../../../lib/audio/recorder";
 import { assessPronunciation } from "../../../lib/azure/pronunciationAssessment";
+import { transcribeSpeech } from "../../../lib/azure/transcribeSpeech";
 import { speakText } from "../../../lib/azure/tts";
 import { generateAIFeedback } from "../../../lib/reading/feedbackGenerator";
 import { typography } from "../../../lib/ui/typography";
@@ -369,7 +370,28 @@ export default function StoryScreen() {
 
     // 🔹 Final reading assessment
     try {
+      const realTranscript = await transcribeSpeech(audioUri);
+      function fixNames(transcript: string, reference: string) {
+        const refWords = reference.split(" ");
+        const transWords = transcript.split(" ");
+
+        return transWords
+          .map((word) => {
+            const lower = word.toLowerCase();
+
+            // find close match in reference (simple match)
+            const match = refWords.find(
+              (ref) =>
+                ref.toLowerCase().startsWith(lower[0]) && // same starting sound
+                Math.abs(ref.length - word.length) <= 2, // similar length
+            );
+
+            return match || word;
+          })
+          .join(" ");
+      }
       const json: any = await assessPronunciation(audioUri, sentence);
+      console.log("REAL TRANSCRIPT:", realTranscript);
 
       if (!json?.NBest?.length) {
         throw new Error("No speech recognized");
@@ -390,8 +412,14 @@ export default function StoryScreen() {
           errorType: w.PronunciationAssessment?.ErrorType,
         })) || [];
 
-      const recognizedText = json.DisplayText || "";
-      setTranscript(recognizedText);
+      let displayTranscript = realTranscript;
+
+      if (!realTranscript || realTranscript.trim() === "") {
+        displayTranscript =
+          "We couldn’t understand your reading. Please try again in English.";
+      }
+
+      setTranscript(displayTranscript);
 
       const missed = words
         .filter((w) => w.errorType === "Omission")
@@ -442,11 +470,12 @@ export default function StoryScreen() {
 
       const feedback = await generateAIFeedback({
         targetSentence: sentence,
-        transcription: recognizedText,
-        accuracy: finalScore,
+        transcription: realTranscript,
+        accuracy: accuracyScore, // already fixed
+        stars, // 🔥 ADD THIS
         errors: {
           missed,
-          extra,
+          extra: [], // ignore
           mispronounced,
         },
       });
@@ -464,7 +493,34 @@ export default function StoryScreen() {
           setPendingMCQ(true);
         }
       }
+
       setShowFeedback(true);
+
+      if (questions.length === 0) {
+        try {
+          await submitReadingResult({
+            schoolId,
+            classId,
+            learnerId,
+            activity: exerciseIndex + 1,
+            profile: readingProfile,
+
+            // ✅ USE LOCAL VALUES (NOT STATE)
+            accuracyScore,
+            completenessScore,
+            fluencyScore,
+            pronScore,
+
+            finalScore,
+            stars,
+
+            comprehensionScore: 0,
+            comprehensionMaxScore: 0,
+          });
+        } catch (err) {
+          console.error("Fallback submit error:", err);
+        }
+      }
     } catch (error) {
       console.error("Reading error:", error);
 
@@ -480,6 +536,32 @@ export default function StoryScreen() {
         if (currentQ?.options) {
           setShuffledOptions(shuffleOptions(currentQ.options));
           setPendingMCQ(true);
+        }
+      }
+      // 👇 ADD HERE
+      if (questions.length === 0) {
+        try {
+          await submitReadingResult({
+            schoolId,
+            classId,
+            learnerId,
+            activity: exerciseIndex + 1,
+            profile: readingProfile,
+
+            // ❗ no valid scores in error → use safe defaults
+            accuracyScore: 0,
+            completenessScore: 0,
+            fluencyScore: 0,
+            pronScore: 0,
+
+            finalScore: 0,
+            stars: 0,
+
+            comprehensionScore: 0,
+            comprehensionMaxScore: 0,
+          });
+        } catch (err) {
+          console.error("Fallback submit error (catch):", err);
         }
       }
     }
@@ -894,6 +976,8 @@ export default function StoryScreen() {
             </View>
           </Modal>
 
+          {/* MCQ MODAL - UPDATED: Submit button only active when answer selected */}
+
           <Modal visible={showMCQ} transparent animationType="fade">
             <View className="flex-1 bg-black/50 items-center justify-center">
               <View className="bg-white rounded-3xl p-8 w-[50%] items-center">
@@ -907,10 +991,13 @@ export default function StoryScreen() {
                 {shuffledOptions.map((opt, index) => (
                   <TouchableOpacity
                     key={index}
-                    onPress={() => setSelectedAnswer(opt)}
+                    onPress={() =>
+                      !comprehensionCorrect && setSelectedAnswer(opt)
+                    }
                     className={`w-full py-3 px-6 rounded-xl mb-3 ${
                       selectedAnswer === opt ? "bg-blue-400" : "bg-gray-200"
-                    }`}
+                    } ${comprehensionCorrect !== null ? "opacity-50" : "opacity-100"}`}
+                    disabled={comprehensionCorrect !== null}
                   >
                     <Text className="text-center font-sans-bold text-gray-800">
                       {opt.text}
@@ -918,13 +1005,14 @@ export default function StoryScreen() {
                   </TouchableOpacity>
                 ))}
 
-                {selectedAnswer && (
+                {/* Feedback only shows after submission */}
+                {comprehensionCorrect !== null && (
                   <Text className="mt-4 text-lg font-sans-bold text-center">
                     {isDevelopingProfile
-                      ? selectedAnswer.feedback
-                      : selectedAnswer.score === 2
+                      ? selectedAnswer?.feedback
+                      : selectedAnswer?.score === 2
                         ? "Great job! You understood it well 👍"
-                        : selectedAnswer.score === 1
+                        : selectedAnswer?.score === 1
                           ? "Almost there! Keep practicing 😊"
                           : "Let's try again next time 💪"}
                   </Text>
@@ -932,17 +1020,15 @@ export default function StoryScreen() {
 
                 <TouchableOpacity
                   onPress={() => {
-                    if (!selectedAnswer) return;
+                    if (!selectedAnswer || comprehensionCorrect !== null)
+                      return;
 
                     const isCorrect =
                       selectedAnswer.text === activity.correctAnswer;
-
-                    const pcmScore = selectedAnswer.score; // 0 | 1 | 2
+                    const pcmScore = selectedAnswer.score;
 
                     setComprehensionCorrect(isCorrect);
                     setComprehensionScores((prev) => [...prev, pcmScore]);
-
-                    console.log("PCM Score:", pcmScore);
 
                     setTimeout(async () => {
                       const questions = getQuestions(
@@ -1009,13 +1095,20 @@ export default function StoryScreen() {
                       }
                     }, 1200);
                   }}
-                  className="bg-green-500 px-8 py-3 rounded-full mt-6"
+                  className={`px-8 py-3 rounded-full mt-6 ${
+                    !selectedAnswer || comprehensionCorrect !== null
+                      ? "bg-gray-400"
+                      : "bg-green-500"
+                  }`}
+                  disabled={!selectedAnswer || comprehensionCorrect !== null}
                 >
                   <Text className="text-white font-sans-bold">Submit</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </Modal>
+
+          {/* FINAL FEEDBACK MODAL */}
 
           <Modal visible={showFinalFeedback} transparent animationType="fade">
             <View className="flex-1 bg-black/50 items-center justify-center">

@@ -40,7 +40,7 @@
     "def2": ""
   },
   "are": {
-    "ipa": "/ˈär/",
+    "ipa": "",
     "def1": "",
     "def2": ""
   },
@@ -390,7 +390,7 @@
     "def2": "the season when crops are gathered"
   },
   "has": {
-    "ipa": "/ˈhaz/",
+    "ipa": "",
     "def1": "",
     "def2": ""
   },
@@ -1823,5 +1823,110 @@
     "ipa": "/ˈyü/",
     "def1": "the person, thing, or group these words are spoken or written to",
     "def2": "anyone at all"
+  },
+  "gray": {
+    "ipa": "",
+    "def1": "of a color that is a blend of black and white",
+    "def2": "having gray hair"
+  },
+  "bunny": {
+    "ipa": "/ˈbə-nē/",
+    "def1": "rabbit",
+    "def2": ""
+  },
+  "crabs": {
+    "ipa": "/ˈkrab/",
+    "def1": "a sea animal that is a crustacean related to the lobsters and has a short broad flat shell and a front pair of legs with small claws",
+    "def2": ""
+  },
+  "hard": {
+    "ipa": "/ˈhärd/",
+    "def1": "not easily cut, pierced, or divided : not soft",
+    "def2": "difficult to do or to understand"
+  },
+  "shells": {
+    "ipa": "/ˈshel/",
+    "def1": "a stiff hard covering of an animal (as a turtle, oyster, or crab)",
+    "def2": "the tough outer covering of an egg"
+  },
+  "wash": {
+    "ipa": "/ˈwȯsh/",
+    "def1": "to cleanse with water and usually a cleaning agent (as soap)",
+    "def2": "to wet completely with liquid"
+  },
+  "iron": {
+    "ipa": "/ˈī-ərn/",
+    "def1": "a heavy silvery white metallic chemical element that rusts easily, is strongly attracted by magnets, occurs in meteorites and combined in minerals, and is necessary for transporting oxygen in the blood",
+    "def2": "a device that is heated and used for making cloth smooth"
+  },
+  "dress": {
+    "ipa": "/ˈdres/",
+    "def1": "to put clothes on",
+    "def2": "to put on clothes in a particular way"
+  },
+  "dog": {
+    "ipa": "/ˈdȯg/",
+    "def1": "a domestic animal that eats meat and is closely related to the wolves",
+    "def2": "any of the group of mammals (as wolves, foxes, and jackals) to which the domestic dog belongs"
+  },
+  "collar": {
+    "ipa": "/ˈkä-lər/",
+    "def1": "the part of a piece of clothing that fits around a person's neck",
+    "def2": "a band of material worn around an animal's neck"
+  },
+  "jumps": {
+    "ipa": "/ˈjəmp/",
+    "def1": "to spring into the air : leap",
+    "def2": "to pass over or cause to pass over with or as if with a leap"
+  },
+  "mat": {
+    "ipa": "/ˈmat/",
+    "def1": "a piece of material used as a floor or seat covering or in front of a door to wipe the shoes on",
+    "def2": "a decorative piece of material used under dishes or vases"
+  },
+  "hug": {
+    "ipa": "/ˈhəg/",
+    "def1": "to clasp in the arms : embrace",
+    "def2": "to keep close to"
+  },
+  "animals": {
+    "ipa": "/ˈa-nə-məl/",
+    "def1": "any member of the kingdom of living things (as earthworms, crabs, birds, and people) that differ from plants typically in being able to move about, in not having cell walls made of cellulose, and in depending on plants and other animals as sources of food",
+    "def2": "any of the animals lower than humans in the natural order"
+  },
+  "felt": {
+    "ipa": "/ˈfelt/",
+    "def1": "a soft heavy cloth made by rolling and pressing fibers together",
+    "def2": ""
+  },
+  "dusty": {
+    "ipa": "/ˈdə-stē/",
+    "def1": "filled or covered with dust",
+    "def2": "resembling dust"
+  },
+  "read": {
+    "ipa": "/ˈrēd/",
+    "def1": "to understand language through written symbols for speech sounds",
+    "def2": "to speak aloud written or printed words"
+  },
+  "library": {
+    "ipa": "/ˈlī-ˌbrer-ē/",
+    "def1": "a place where literary or reference materials (as books, manuscripts, recordings, or films) are kept for use but are not for sale",
+    "def2": "a collection of literary or reference materials"
+  },
+  "books": {
+    "ipa": "/ˈbu̇k/",
+    "def1": "a set of sheets of paper bound together",
+    "def2": "a long written work"
+  },
+  "learn": {
+    "ipa": "/ˈlərn/",
+    "def1": "to get knowledge of or skill in by study, instruction, or experience",
+    "def2": "memorize"
+  },
+  "things": {
+    "ipa": "/ˈthiŋ/",
+    "def1": "an act or matter that is or is to be done",
+    "def2": "something that exists and can be talked about"
   }
 }

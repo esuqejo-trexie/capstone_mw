@@ -3,6 +3,7 @@
 export type ReadingFeedbackInput = {
   targetSentence: string;
   transcription: string;
+  stars: number;
   accuracy: number;
   errors: {
     missed: string[];
@@ -12,38 +13,80 @@ export type ReadingFeedbackInput = {
 };
 
 const SYSTEM_INSTRUCTIONS = `
-You are a reading coach for Grade 3 English learners.
-Give one short, encouraging response.
-Use simple words.
-Focus on what the child can improve.
+You are a reading coach for Grade 3 learners.
+
+STRICT RULES:
+
+1. The target sentence is ALWAYS correct.
+2. NEVER rewrite or fix the sentence.
+3. ONLY use the provided errors.
+
+FEEDBACK RULES:
+
+- If stars = 3:
+  → Give praise ONLY.
+  → Do NOT mention errors.
+
+- If stars = 2 or below:
+  → Give helpful feedback.
+
+- If there are missed words:
+  → Mention ONE missed word in your sentence.
+  → Encourage the learner to read it again.
+
+- If there are mispronounced words:
+  → Mention the word and encourage clearer pronunciation.
+
+- NEVER give vague feedback like:
+  "read all words" or "try again"
+
+STYLE:
+- One short sentence only
+- Simple English
+- Encouraging tone
 `;
 
 function buildUserPrompt(input: ReadingFeedbackInput): string {
   return `
-Target sentence:
-${input.targetSentence}
+Target: ${input.targetSentence}
 
-What the child said:
-${input.transcription}
+Child said: ${input.transcription}
 
-Accuracy:
-${input.accuracy}%
+Stars: ${input.stars}
 
-Errors:
-- Missed words: ${input.errors.missed.length ? input.errors.missed.join(", ") : "none"}
-- Extra words: ${input.errors.extra.length ? input.errors.extra.join(", ") : "none"}
-- Mispronounced words: ${
+Missed words: ${
+    input.errors.missed.length ? input.errors.missed.join(", ") : "none"
+  }
+
+Mispronounced words: ${
     input.errors.mispronounced.length
       ? input.errors.mispronounced.join(", ")
       : "none"
   }
+
+Instruction:
+If there are missed or mispronounced words, mention at least one word in your answer.
 `;
+}
+function normalize(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[.,!?]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export async function generateAIFeedback(
   input: ReadingFeedbackInput,
 ): Promise<string> {
   try {
+    const normalizedTarget = normalize(input.targetSentence);
+    const normalizedTranscription = normalize(input.transcription);
+
+    const isExactMatch = normalizedTarget === normalizedTranscription;
+    if (isExactMatch) {
+      return "Excellent! You read it perfectly!";
+    }
     const endpoint = process.env.EXPO_PUBLIC_AZURE_GPT_ENDPOINT;
     const apiKey = process.env.EXPO_PUBLIC_AZURE_GPT_API_KEY;
     const deployment = process.env.EXPO_PUBLIC_AZURE_GPT_DEPLOYMENT;
@@ -91,17 +134,19 @@ export async function generateAIFeedback(
  * Used when AI is unavailable or misconfigured
  */
 function fallbackFeedback(input: ReadingFeedbackInput): string {
-  if (input.errors.missed.length > 0) {
-    return "Good try! Remember to read every word you see.";
+  const { missed, mispronounced } = input.errors;
+
+  if (input.stars === 3) {
+    return "Excellent! You read it perfectly!";
   }
 
-  if (input.errors.extra.length > 0) {
-    return "Nice effort! Try to read only the words in the sentence.";
+  if (missed.length > 0) {
+    return `Good try! You missed "${missed[0]}". Let's read it again.`;
   }
 
-  if (input.accuracy < 60) {
-    return "Keep practicing! Let’s read the sentence together next time.";
+  if (mispronounced.length > 0) {
+    return `Nice effort! Try saying "${mispronounced[0]}" clearly.`;
   }
 
-  return "Great job reading! Keep it up!";
+  return "Good job! Keep practicing!";
 }

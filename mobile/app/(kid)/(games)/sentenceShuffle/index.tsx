@@ -119,6 +119,14 @@ export default function SentenceShuffleGame() {
     setLocked(false);
   }
 
+  /* Navigate back to games screen */
+  function navigateToGames() {
+    // Reset the game state before navigating
+    resetGame();
+    // Use replace to go directly to the games screen
+    router.replace("/(kid)/games");
+  }
+
   if (finished) {
     return (
       <ImageBackground
@@ -150,22 +158,7 @@ export default function SentenceShuffleGame() {
             </Text>
 
             <Pressable
-              onPress={resetGame}
-              className={`bg-blue-500 rounded-full border-b-4 border-blue-700 active:border-b-0 active:mt-1 mb-4 ${
-                isCompact ? "px-8 py-4" : "px-12 py-5"
-              }`}
-            >
-              <Text
-                className={`text-white font-bold ${
-                  isCompact ? "text-lg" : "text-2xl"
-                }`}
-              >
-                Play Again
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => router.back()}
+              onPress={navigateToGames}
               className={`bg-gray-300 rounded-full border-b-4 border-gray-500 active:border-b-0 active:mt-1 ${
                 isCompact ? "px-8 py-4" : "px-12 py-5"
               }`}
@@ -256,8 +249,8 @@ export default function SentenceShuffleGame() {
                   or what
                 </Text>
                 <Text className="text-sm text-gray-800 mb-1">
-                  <Text className="font-bold text-green-600">Verb:</Text>{" "}
-                  Action word
+                  <Text className="font-bold text-green-600">Verb:</Text> Action
+                  word
                 </Text>
                 <Text className="text-sm text-gray-800 mb-3">
                   <Text className="font-bold text-orange-500">Object:</Text>{" "}
@@ -431,7 +424,7 @@ export default function SentenceShuffleGame() {
               </Pressable>
 
               <Pressable
-                onPress={() => router.back()}
+                onPress={navigateToGames}
                 className="flex-1 bg-red-500 py-4 rounded-2xl items-center border-b-4 border-red-700 active:border-b-0 active:mt-1"
               >
                 <Text className="text-white font-bold text-lg">Quit</Text>

@@ -29,7 +29,7 @@ function generateQuestions() {
 export default function FirstLetterGame() {
   const router = useRouter();
 
-  const [questions, setQuestions] = useState(generateQuestions);
+  const [questions, setQuestions] = useState(() => generateQuestions());
   const [roundIndex, setRoundIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -76,9 +76,11 @@ export default function FirstLetterGame() {
     return () => loop.stop();
   }, []);
 
-  /* reset round */
+  /* reset round - for retry/new round within same session */
   function resetRound(newSet: boolean) {
-    if (newSet) setQuestions(generateQuestions());
+    if (newSet) {
+      setQuestions(generateQuestions());
+    }
     setRoundIndex(0);
     setScore(0);
     setSelected(null);
@@ -129,6 +131,13 @@ export default function FirstLetterGame() {
     speakWord(question.spokenWord ?? question.displayWord);
   }
 
+  /* Navigate back to games screen */
+  function navigateToGames() {
+    // Use replace to go directly to the games screen
+    // The exact path should match your route structure
+    router.replace("/(kid)/games");
+  }
+
   /* ================= FINISHED ================= */
   if (finished) {
     return (
@@ -148,23 +157,7 @@ export default function FirstLetterGame() {
 
           <View className="flex-row gap-6 flex-wrap justify-center">
             <Pressable
-              onPress={() => resetRound(false)}
-              className="bg-blue-500 px-10 py-5 rounded-3xl"
-            >
-              <Text className="text-white text-xl font-sans-bold">Retry</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => resetRound(true)}
-              className="bg-green-600 px-10 py-5 rounded-3xl"
-            >
-              <Text className="text-white text-xl font-sans-bold">
-                New Round
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => router.back()}
+              onPress={navigateToGames}
               className="bg-secondary px-10 py-5 rounded-3xl"
             >
               <Text className="text-white text-xl font-sans-bold">
@@ -298,7 +291,7 @@ export default function FirstLetterGame() {
             </Text>
 
             <Text className="text-base text-gray-600 text-center mb-8">
-              Changes won't be saved.
+              Your progress will be saved.
             </Text>
 
             <View className="flex-row gap-6">
@@ -315,7 +308,7 @@ export default function FirstLetterGame() {
                 onPress={async () => {
                   await saveResult();
                   setShowExitModal(false);
-                  router.back();
+                  navigateToGames();
                 }}
                 className="bg-red-500 px-8 py-4 rounded-2xl"
               >

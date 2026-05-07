@@ -28,16 +28,7 @@ const games = [
     rotation: "-4deg",
     delay: 0,
   },
-  {
-    title: "Word Explorer",
-    route: "/(kid)/(games)/wordExplorer",
-    ticketCost: 1,
-    color: "bg-green-400",
-    darkColor: "bg-green-600",
-    iconName: "search",
-    rotation: "3deg",
-    delay: 300,
-  },
+
   {
     title: "Sentence Shuffle",
     route: "/(kid)/(games)/sentenceShuffle",
